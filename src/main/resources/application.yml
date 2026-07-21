@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: thup
+
+sdk:
+  logging:
+    enabled: true
+    not-logging-urls:
+      - "/v3/api-docs/**"
+      - "/swagger-ui/**"
+
+  response:
+    enabled: true
+    not-wrapping-urls:
+      - "/v3/api-docs/**"
+      - "/v3/api-docs"
+      - "/swagger-ui/**"
+
+  exception:
+    enabled: true
+    use-english-message: true
+
+  swagger:
+    enabled: true
+    title: "Thup API"
+    description: "Thup API Documentation"
+    version: "v1"
+    group: "API"
+    paths-to-match:
+      - "/v1/**"
