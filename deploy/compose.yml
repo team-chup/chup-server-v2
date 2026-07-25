@@ -1,0 +1,81 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: thup-app
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - DATAGSM_CLIENT_ID=${DATAGSM_CLIENT_ID}
+      - DATAGSM_CLIENT_SECRET=${DATAGSM_CLIENT_SECRET}
+      - DATAGSM_REDIRECT_URI=${DATAGSM_REDIRECT_URI}
+      - OAUTH_SUCCESS_REDIRECT_URL=${OAUTH_SUCCESS_REDIRECT_URL}
+      - OAUTH_FAILURE_REDIRECT_URL=${OAUTH_FAILURE_REDIRECT_URL}
+      - SESSION_COOKIE_SECURE=true
+      - SESSION_COOKIE_SAME_SITE=None
+    ports:
+      - "80:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - gsmsv-net
+
+  mysql:
+    image: mysql:8.0
+    container_name: thup-mysql
+    environment:
+      - MYSQL_DATABASE=thup
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - TZ=Asia/Seoul
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: always
+    networks:
+      - gsmsv-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: thup-redis
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - gsmsv-net
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  gsmsv-net:
+    driver: bridge
+    driver_opts:
+      # GSMSV VM은 GRE 터널을 통해 공인 IP를 받아 실사용 가능 MTU가 1400으로 고정되어 있음.
+      # 기본 Docker 네트워크 MTU(1500)로 두면 외부 HTTP 요청이 응답 없이 실패한다.
+      com.docker.network.driver.mtu: "1400"
