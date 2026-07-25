@@ -2,6 +2,40 @@ spring:
   application:
     name: thup
 
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3307}/thup?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:1234}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      password: ${REDIS_PASSWORD:}
+      database: 1
+
+  session:
+    redis:
+      flush-mode: immediate
+      save-mode: on-set-attribute
+
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 3h
+  forward-headers-strategy: framework
+
 sdk:
   logging:
     enabled: true
@@ -27,4 +61,4 @@ sdk:
     version: "v1"
     group: "API"
     paths-to-match:
-      - "/v1/**"
+      - "/api/**"
