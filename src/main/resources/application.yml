@@ -36,12 +36,32 @@ server:
       timeout: 3h
   forward-headers-strategy: framework
 
+session:
+  cookie:
+    # 로컬(http://localhost)은 Secure 쿠키를 거부하므로 기본값은 완화된 설정입니다.
+    # 운영 배포 시 반드시 SESSION_COOKIE_SECURE=true, SESSION_COOKIE_SAME_SITE=None 으로 설정하세요.
+    secure: ${SESSION_COOKIE_SECURE:false}
+    same-site: ${SESSION_COOKIE_SAME_SITE:Lax}
+
+oauth:
+  datagsm:
+    client-id: ${DATAGSM_CLIENT_ID}
+    client-secret: ${DATAGSM_CLIENT_SECRET}
+    redirect-uri: ${DATAGSM_REDIRECT_URI:http://localhost:8080/api/auth/datagsm/callback}
+    success-redirect-url: ${OAUTH_SUCCESS_REDIRECT_URL:http://localhost:3000}
+    failure-redirect-url: ${OAUTH_FAILURE_REDIRECT_URL:http://localhost:3000/login/error}
+
+cors:
+  allowed-origins:
+    - "http://localhost:3000"
+
 sdk:
   logging:
     enabled: true
     not-logging-urls:
       - "/v3/api-docs/**"
       - "/swagger-ui/**"
+      - "/api/auth/datagsm/callback"
 
   response:
     enabled: true
@@ -49,6 +69,8 @@ sdk:
       - "/v3/api-docs/**"
       - "/v3/api-docs"
       - "/swagger-ui/**"
+      - "/api/auth/datagsm/login"
+      - "/api/auth/datagsm/callback"
 
   exception:
     enabled: true

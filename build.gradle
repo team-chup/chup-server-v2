@@ -50,6 +50,9 @@ dependencies {
 
     /* sdk */
     implementation("com.github.themoment-team:the-sdk:1.5")
+
+    /* DataGSM OAuth SDK */
+    implementation("com.github.themoment-team:datagsm-oauth-sdk-java:1.5.0")
 }
 
 tasks.named('test') {
