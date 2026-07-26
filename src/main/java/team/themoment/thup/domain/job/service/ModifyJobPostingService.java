@@ -17,6 +17,7 @@ import team.themoment.thup.global.storage.FileStorageService;
 import team.themoment.thup.global.storage.StoredFile;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -49,18 +50,22 @@ public class ModifyJobPostingService {
         if (attachments.size() > MAX_ATTACHMENTS) {
             throw new ExpectedException("첨부파일은 최대 " + MAX_ATTACHMENTS + "개까지 등록할 수 있습니다.", HttpStatus.PAYLOAD_TOO_LARGE);
         }
+
+        List<AttachmentFileType> fileTypes = new ArrayList<>(attachments.size());
         for (MultipartFile file : attachments) {
             if (file.getSize() > MAX_ATTACHMENT_SIZE_BYTES) {
                 throw new ExpectedException("첨부파일 용량이 너무 큽니다.", HttpStatus.PAYLOAD_TOO_LARGE);
             }
+            fileTypes.add(AttachmentFileTypeResolver.resolve(file));
         }
 
         List<AttachmentJpaEntity> existing = attachmentRepository.findAllByJobPosting_Id(jobPosting.getId());
         attachmentRepository.deleteAll(existing);
         existing.forEach(attachment -> fileStorageService.delete(attachment.getFileUrl()));
 
-        for (MultipartFile file : attachments) {
-            AttachmentFileType fileType = AttachmentFileTypeResolver.resolve(file);
+        for (int i = 0; i < attachments.size(); i++) {
+            MultipartFile file = attachments.get(i);
+            AttachmentFileType fileType = fileTypes.get(i);
             StoredFile stored = fileStorageService.store(file, "job-attachments/" + jobPosting.getId());
 
             attachmentRepository.save(
