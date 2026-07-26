@@ -53,6 +53,9 @@ dependencies {
 
     /* DataGSM OAuth SDK */
     implementation("com.github.themoment-team:datagsm-oauth-sdk-java:1.5.0")
+
+    /* Resend (이메일 발송) */
+    implementation("com.resend:resend-java:4.13.0")
 }
 
 tasks.named('test') {
