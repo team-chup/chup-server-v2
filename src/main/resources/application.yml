@@ -29,12 +29,20 @@ spring:
       flush-mode: immediate
       save-mode: on-set-attribute
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 60MB
+
 server:
   port: 8080
   servlet:
     session:
       timeout: 3h
   forward-headers-strategy: framework
+
+storage:
+  base-dir: ${STORAGE_BASE_DIR:./storage}
 
 session:
   cookie:

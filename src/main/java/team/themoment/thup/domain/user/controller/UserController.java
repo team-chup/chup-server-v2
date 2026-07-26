@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import team.themoment.thup.domain.user.entity.ResumeJpaEntity;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
 import team.themoment.thup.domain.user.service.ModifyUserPhoneNumberService;
@@ -46,18 +48,18 @@ public class UserController {
         return modifyUserPhoneNumberService.execute(user, request.phoneNumber());
     }
 
-    @Operation(summary = "이력서 등록/재등록", description = "현재 로그인한 사용자의 이력서를 등록하거나 재등록합니다.")
+    @Operation(summary = "이력서 등록/재등록", description = "현재 로그인한 사용자의 PDF 이력서를 등록하거나 재등록합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "등록 성공"),
+            @ApiResponse(responseCode = "400", description = "PDF 파일이 아님"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
+            @ApiResponse(responseCode = "413", description = "파일 용량 초과")
     })
-    @PutMapping("/me/resume")
-    public ResumeJpaEntity upsertResume(@AuthenticationPrincipal OAuth2User user, @RequestBody ResumeRequest request) {
-        return upsertResumeService.execute(user, request.fileName(), request.fileUrl(), request.fileSize());
+    @PutMapping(value = "/me/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResumeJpaEntity upsertResume(@AuthenticationPrincipal OAuth2User user, @RequestParam("file") MultipartFile file) {
+        return upsertResumeService.execute(user, file);
     }
 
     private record PhoneNumberRequest(String phoneNumber) {}
-
-    private record ResumeRequest(String fileName, String fileUrl, Integer fileSize) {}
 }
