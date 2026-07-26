@@ -11,4 +11,8 @@ public interface JobPostingRepository extends JpaRepository<JobPostingJpaEntity,
     List<JobPostingJpaEntity> findAllByStatus(JobPostingStatus status);
 
     List<JobPostingJpaEntity> findAllByCompanyNameContainingIgnoreCase(String companyName);
+
+    List<JobPostingJpaEntity> findAllByStatusOrderByRecruitEndAsc(JobPostingStatus status);
+
+    long countByStatus(JobPostingStatus status);
 }
