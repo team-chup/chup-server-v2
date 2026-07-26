@@ -9,4 +9,8 @@ import java.util.List;
 public interface JobPostingRepository extends JpaRepository<JobPostingJpaEntity, Long> {
 
     List<JobPostingJpaEntity> findAllByStatus(JobPostingStatus status);
+
+    List<JobPostingJpaEntity> findAllByStatusOrderByRecruitEndAsc(JobPostingStatus status);
+
+    long countByStatus(JobPostingStatus status);
 }
