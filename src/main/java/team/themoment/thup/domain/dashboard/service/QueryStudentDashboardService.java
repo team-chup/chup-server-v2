@@ -13,7 +13,9 @@ import team.themoment.thup.domain.job.repository.JobPostingRepository;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +34,10 @@ public class QueryStudentDashboardService {
         long myApplications = applicationRepository.countByUser_Id(userId);
         long passed = applicationRepository.countByUser_IdAndStatus(userId, ApplicationStatus.PASSED);
 
+        Set<Long> appliedJobPostingIds = new HashSet<>(applicationRepository.findJobPostingIdsByUser_Id(userId));
         List<RecommendedJobResDto> recommendedJobs = jobPostingRepository
                 .findAllByStatusOrderByRecruitEndAsc(JobPostingStatus.RECRUITING).stream()
-                .filter(job -> !applicationRepository.existsByUser_IdAndJobPosting_Id(userId, job.getId()))
+                .filter(job -> !appliedJobPostingIds.contains(job.getId()))
                 .limit(RECOMMENDED_JOB_LIMIT)
                 .map(job -> new RecommendedJobResDto(
                         job.getId(),
