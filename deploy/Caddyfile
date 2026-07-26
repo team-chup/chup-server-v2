@@ -1,0 +1,4 @@
+ssh.gsmsv.site, localhost, caddy {
+	tls internal
+	reverse_proxy app:8080
+}

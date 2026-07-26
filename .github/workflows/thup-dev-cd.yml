@@ -35,7 +35,7 @@ jobs:
           port: ${{ secrets.GSMSV_SSH_PORT }}
           username: ubuntu
           key: ${{ secrets.GSMSV_SSH_PRIVATE_KEY }}
-          source: "build/libs/thup-*.jar,docker/Dockerfile,deploy/compose.yml"
+          source: "build/libs/thup-*.jar,docker/Dockerfile,deploy/compose.yml,deploy/Caddyfile"
           target: "/home/ubuntu/thup/"
 
       - name: Deploy on GSM SV VM
