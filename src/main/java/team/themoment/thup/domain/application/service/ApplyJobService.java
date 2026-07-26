@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team.themoment.sdk.exception.ExpectedException;
 import team.themoment.thup.domain.application.entity.ApplicationJpaEntity;
+import team.themoment.thup.domain.application.mail.ApplicationEmailTemplates;
 import team.themoment.thup.domain.application.repository.ApplicationRepository;
 import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
@@ -16,6 +17,7 @@ import team.themoment.thup.domain.user.entity.ResumeJpaEntity;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
 import team.themoment.thup.domain.user.repository.ResumeRepository;
 import team.themoment.thup.domain.user.repository.UserRepository;
+import team.themoment.thup.global.mail.MailService;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class ApplyJobService {
     private final JobPositionRepository jobPositionRepository;
     private final UserRepository userRepository;
     private final ResumeRepository resumeRepository;
+    private final MailService mailService;
 
     public ApplicationJpaEntity execute(OAuth2User user, Long jobId, Long jobPositionId) {
         Long userId = ((Number) user.getAttribute("id")).longValue();
@@ -44,7 +47,7 @@ public class ApplyJobService {
         ResumeJpaEntity resume = resumeRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new ExpectedException("등록된 이력서가 없습니다.", HttpStatus.BAD_REQUEST));
 
-        return applicationRepository.save(
+        ApplicationJpaEntity application = applicationRepository.save(
                 ApplicationJpaEntity.builder()
                         .user(foundUser)
                         .jobPosting(jobPosting)
@@ -52,5 +55,13 @@ public class ApplyJobService {
                         .resumeSnapshotUrl(resume.getFileUrl())
                         .build()
         );
+
+        mailService.send(
+                foundUser.getEmail(),
+                ApplicationEmailTemplates.appliedSubject(jobPosting.getCompanyName()),
+                ApplicationEmailTemplates.appliedBody(jobPosting.getCompanyName(), jobPosition.getName())
+        );
+
+        return application;
     }
 }
