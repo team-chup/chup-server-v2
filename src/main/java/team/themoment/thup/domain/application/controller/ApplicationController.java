@@ -55,15 +55,15 @@ public class ApplicationController {
         return queryMyApplicationsService.execute(user);
     }
 
-    @Operation(summary = "지원자 목록 조회", description = "전체 지원자 목록을 조회합니다.")
+    @Operation(summary = "지원자 목록 조회", description = "전체 또는 특정 공고(jobPostingId=공고 ID)의 지원자 목록을 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @GetMapping("/api/admin/applicants")
-    public List<ApplicationJpaEntity> queryApplicants() {
-        return queryApplicantsService.execute();
+    public List<ApplicationJpaEntity> queryApplicants(@RequestParam(required = false) Long jobPostingId) {
+        return queryApplicantsService.execute(jobPostingId);
     }
 
     @Operation(summary = "지원자 이력서 ZIP 다운로드", description = "전체 지원자의 이력서를 조회합니다.")
