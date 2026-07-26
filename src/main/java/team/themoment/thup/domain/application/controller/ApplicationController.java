@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import team.themoment.thup.domain.application.service.QueryApplicantResumeServic
 import team.themoment.thup.domain.application.service.QueryApplicantResumesZipService;
 import team.themoment.thup.domain.application.service.QueryApplicantsService;
 import team.themoment.thup.domain.application.service.QueryMyApplicationsService;
+import team.themoment.thup.global.storage.FileDownloadResponses;
 
 import java.util.List;
 
@@ -66,27 +69,28 @@ public class ApplicationController {
         return queryApplicantsService.execute();
     }
 
-    @Operation(summary = "지원자 이력서 ZIP 다운로드", description = "전체 지원자의 이력서를 조회합니다.")
+    @Operation(summary = "지원자 이력서 ZIP 다운로드", description = "전체 또는 특정 공고(companyId=공고 ID) 지원자의 이력서를 ZIP으로 다운로드합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "200", description = "다운로드 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-            @ApiResponse(responseCode = "403", description = "권한 없음")
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "지원자 없음")
     })
     @GetMapping("/api/admin/applicants/zip")
-    public List<ApplicationJpaEntity> downloadApplicantsZip() {
-        return queryApplicantResumesZipService.execute();
+    public ResponseEntity<Resource> downloadApplicantsZip(@RequestParam(required = false) Long companyId) {
+        return FileDownloadResponses.of(queryApplicantResumesZipService.execute(companyId));
     }
 
-    @Operation(summary = "지원자 이력서 다운로드", description = "특정 지원 건의 이력서 정보를 조회합니다.")
+    @Operation(summary = "지원자 이력서 다운로드", description = "특정 지원 건의 이력서 파일을 다운로드합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "200", description = "다운로드 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "지원 내역을 찾을 수 없음")
     })
     @GetMapping("/api/admin/applicants/{applicationId}/resume")
-    public ApplicationJpaEntity downloadApplicantResume(@PathVariable Long applicationId) {
-        return queryApplicantResumeService.execute(applicationId);
+    public ResponseEntity<Resource> downloadApplicantResume(@PathVariable Long applicationId) {
+        return FileDownloadResponses.of(queryApplicantResumeService.execute(applicationId));
     }
 
     @Operation(summary = "지원 결과 처리", description = "지원 건의 서류 합격/불합격 결과를 처리합니다.")
