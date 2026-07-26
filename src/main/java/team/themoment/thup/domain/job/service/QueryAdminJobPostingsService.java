@@ -15,7 +15,10 @@ public class QueryAdminJobPostingsService {
 
     private final JobPostingRepository jobPostingRepository;
 
-    public List<JobPostingJpaEntity> execute() {
-        return jobPostingRepository.findAll();
+    public List<JobPostingJpaEntity> execute(String q) {
+        if (q == null || q.isBlank()) {
+            return jobPostingRepository.findAll();
+        }
+        return jobPostingRepository.findAllByCompanyNameContainingIgnoreCase(q.trim());
     }
 }
