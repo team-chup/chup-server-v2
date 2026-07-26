@@ -18,6 +18,9 @@ services:
       - OAUTH_FAILURE_REDIRECT_URL=${OAUTH_FAILURE_REDIRECT_URL}
       - SESSION_COOKIE_SECURE=true
       - SESSION_COOKIE_SAME_SITE=None
+      - STORAGE_BASE_DIR=/data/storage
+    volumes:
+      - storage_data:/data/storage
     depends_on:
       mysql:
         condition: service_healthy
@@ -100,6 +103,8 @@ volumes:
   redis_data:
     driver: local
   caddy_data:
+    driver: local
+  storage_data:
     driver: local
 
 networks:
