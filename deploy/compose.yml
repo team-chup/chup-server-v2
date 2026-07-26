@@ -25,21 +25,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    restart: always
-    networks:
-      - gsmsv-net
-
-  mysql:
-    image: mysql:8.0
-    container_name: thup-mysql
-    environment:
-      - MYSQL_DATABASE=thup
-      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
-      - TZ=Asia/Seoul
-    volumes:
-      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=${MYSQL_PASSWORD}"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v3/api-docs"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,8 +35,30 @@ services:
     networks:
       - gsmsv-net
 
+  # mysql:8.0.46 (2026-07 기준). 예고 없는 패치 버전 교체를 막기 위해 다이제스트로 고정.
+  mysql:
+    image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
+    container_name: thup-mysql
+    environment:
+      - MYSQL_DATABASE=thup
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - TZ=Asia/Seoul
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      # --password= 인자 대신 MYSQL_PWD 환경변수를 사용해 ps 목록에 비밀번호가 노출되지 않도록 함
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping -h localhost -u root --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: always
+    networks:
+      - gsmsv-net
+
+  # redis:7.4.10-alpine (2026-07 기준). 예고 없는 패치 버전 교체를 막기 위해 다이제스트로 고정.
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2
     container_name: thup-redis
     command: >
       redis-server
@@ -58,11 +67,13 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: always
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
       - gsmsv-net
 
