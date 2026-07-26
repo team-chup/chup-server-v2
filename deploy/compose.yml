@@ -70,7 +70,9 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping"]
+      # redis-cli는 AUTH 실패(WRONGPASS) 시에도 exit code 0을 반환하는 경우가 있어
+      # exit code 대신 응답 본문에 PONG이 실제로 찍혔는지로 성공 여부를 판단한다
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
