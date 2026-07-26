@@ -35,6 +35,25 @@ services:
     networks:
       - gsmsv-net
 
+  # caddy:2.11.4-alpine (2026-07 기준). 예고 없는 패치 버전 교체를 막기 위해 다이제스트로 고정.
+  # DataGSM OAuth 세션 쿠키가 SameSite=None + Secure라 HTTPS가 반드시 필요함.
+  # GSM SV는 443을 직접 내주지 않고 임의 포트로만 매핑해주기 때문에, 도메인 없이 쓸 수 있는
+  # 자체 서명 인증서(tls internal)로 TLS를 종단한다. 접속 시 브라우저 경고는 최초 1회 수동으로 신뢰해야 함.
+  caddy:
+    image: caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    container_name: thup-caddy
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    ports:
+      - "443:443"
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: always
+    networks:
+      - gsmsv-net
+
   # mysql:8.0.46 (2026-07 기준). 예고 없는 패치 버전 교체를 막기 위해 다이제스트로 고정.
   mysql:
     image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
@@ -81,6 +100,8 @@ volumes:
   mysql_data:
     driver: local
   redis_data:
+    driver: local
+  caddy_data:
     driver: local
 
 networks:
