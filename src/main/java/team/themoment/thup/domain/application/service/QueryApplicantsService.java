@@ -15,10 +15,10 @@ public class QueryApplicantsService {
 
     private final ApplicationRepository applicationRepository;
 
-    public List<ApplicationJpaEntity> execute(Long companyId) {
-        if (companyId == null) {
+    public List<ApplicationJpaEntity> execute(Long jobPostingId) {
+        if (jobPostingId == null) {
             return applicationRepository.findAll();
         }
-        return applicationRepository.findAllByJobPosting_Id(companyId);
+        return applicationRepository.findAllByJobPosting_Id(jobPostingId);
     }
 }
