@@ -25,4 +25,9 @@ public interface ApplicationRepository extends JpaRepository<ApplicationJpaEntit
     long countByUser_IdAndStatus(Long userId, ApplicationStatus status);
 
     long countByStatus(ApplicationStatus status);
+
+    long countByJobPosting_Id(Long jobPostingId);
+
+    @Query("select a.jobPosting.id, count(a) from ApplicationJpaEntity a where a.jobPosting.id in :jobPostingIds group by a.jobPosting.id")
+    List<Object[]> countGroupedByJobPostingIdIn(List<Long> jobPostingIds);
 }

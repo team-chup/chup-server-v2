@@ -3,10 +3,14 @@ package team.themoment.thup.domain.job.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import team.themoment.thup.domain.application.repository.ApplicationRepository;
+import team.themoment.thup.domain.job.dto.AdminJobPostingResponse;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
 import team.themoment.thup.domain.job.repository.JobPostingRepository;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -14,11 +18,23 @@ import java.util.List;
 public class QueryAdminJobPostingsService {
 
     private final JobPostingRepository jobPostingRepository;
+    private final ApplicationRepository applicationRepository;
 
-    public List<JobPostingJpaEntity> execute(String q) {
-        if (q == null || q.isBlank()) {
-            return jobPostingRepository.findAll();
-        }
-        return jobPostingRepository.findAllByCompanyNameContainingIgnoreCase(q.trim());
+    public List<AdminJobPostingResponse> execute(String q) {
+        List<JobPostingJpaEntity> jobPostings = (q == null || q.isBlank())
+                ? jobPostingRepository.findAll()
+                : jobPostingRepository.findAllByCompanyNameContainingIgnoreCase(q.trim());
+
+        Map<Long, Long> applicantCountByJobId = applicationRepository
+                .countGroupedByJobPostingIdIn(jobPostings.stream().map(JobPostingJpaEntity::getId).toList())
+                .stream()
+                .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
+
+        return jobPostings.stream()
+                .map(jobPosting -> AdminJobPostingResponse.of(
+                        jobPosting,
+                        applicantCountByJobId.getOrDefault(jobPosting.getId(), 0L)
+                ))
+                .toList();
     }
 }
