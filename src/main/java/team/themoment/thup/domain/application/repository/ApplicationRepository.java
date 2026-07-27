@@ -25,4 +25,6 @@ public interface ApplicationRepository extends JpaRepository<ApplicationJpaEntit
     long countByUser_IdAndStatus(Long userId, ApplicationStatus status);
 
     long countByStatus(ApplicationStatus status);
+
+    long countByJobPosting_Id(Long jobPostingId);
 }

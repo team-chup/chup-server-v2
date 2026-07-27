@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import team.themoment.thup.domain.job.dto.AdminJobPostingResponse;
 import team.themoment.thup.domain.job.dto.JobPostingDetailResponse;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
 import team.themoment.thup.domain.job.entity.constant.EmploymentType;
@@ -76,14 +77,14 @@ public class JobController {
         return FileDownloadResponses.of(queryAttachmentService.execute(jobId, fileId));
     }
 
-    @Operation(summary = "관리자 공고 목록", description = "상태와 무관하게 전체 채용 공고 목록을 회사명으로 검색하여 조회합니다.")
+    @Operation(summary = "관리자 공고 목록", description = "상태와 무관하게 전체 채용 공고 목록을 회사명으로 검색하여 조회합니다. 공고별 지원자 수를 함께 반환합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @GetMapping("/api/admin/jobs")
-    public List<JobPostingJpaEntity> queryAdminJobPostings(@RequestParam(required = false) String q) {
+    public List<AdminJobPostingResponse> queryAdminJobPostings(@RequestParam(required = false) String q) {
         return queryAdminJobPostingsService.execute(q);
     }
 
