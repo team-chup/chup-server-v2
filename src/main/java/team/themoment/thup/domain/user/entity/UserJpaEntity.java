@@ -48,6 +48,11 @@ public class UserJpaEntity {
         this.approved = true;
     }
 
+    public void promoteToAdmin() {
+        this.role = Role.ADMIN;
+        this.approved = false;
+    }
+
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
