@@ -76,8 +76,11 @@ public class DataGsmOAuthCallbackService {
     }
 
     private void authenticate(UserJpaEntity user, HttpServletRequest request) {
+        // 관리자로 지정만 되고 아직 승인되지 않은 계정은 승인 전까지 관리자 권한을 주지 않는다
+        Role effectiveRole = (user.getRole() == Role.ADMIN && !user.isApproved()) ? Role.STUDENT : user.getRole();
+
         OAuth2User oAuth2User = new DefaultOAuth2User(
-                List.of(new SimpleGrantedAuthority(user.getRole().getAuthority())),
+                List.of(new SimpleGrantedAuthority(effectiveRole.getAuthority())),
                 Map.of(
                         "id", user.getId(),
                         "role", user.getRole().name(),

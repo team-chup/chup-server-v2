@@ -40,12 +40,22 @@ public class UserJpaEntity {
     @Builder.Default
     private boolean approved = false;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    @Builder.Default
+    private Long version = 0L;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public void approve() {
         this.approved = true;
+    }
+
+    public void promoteToAdmin() {
+        this.role = Role.ADMIN;
+        this.approved = false;
     }
 
     public void updatePhoneNumber(String phoneNumber) {
