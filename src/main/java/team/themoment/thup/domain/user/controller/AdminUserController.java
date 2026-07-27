@@ -5,11 +5,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import team.themoment.thup.domain.user.dto.PendingAdminResDto;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
 import team.themoment.thup.domain.user.service.ApproveAdminService;
 import team.themoment.thup.domain.user.service.PromoteToAdminService;
@@ -34,7 +37,7 @@ public class AdminUserController {
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @GetMapping("/pending")
-    public List<UserJpaEntity> queryPendingAdmins() {
+    public List<PendingAdminResDto> queryPendingAdmins() {
         return queryPendingAdminsService.execute();
     }
 
@@ -47,8 +50,8 @@ public class AdminUserController {
             @ApiResponse(responseCode = "409", description = "이미 관리자인 사용자")
     })
     @PatchMapping("/{userId}/promote")
-    public UserJpaEntity promoteToAdmin(@PathVariable Long userId) {
-        return promoteToAdminService.execute(userId);
+    public UserJpaEntity promoteToAdmin(@AuthenticationPrincipal OAuth2User admin, @PathVariable Long userId) {
+        return promoteToAdminService.execute(admin, userId);
     }
 
     @Operation(summary = "관리자 승인", description = "대기 중인 관리자 계정을 승인합니다. 승인 후 대상자가 재로그인해야 관리자 권한이 반영됩니다.")
@@ -61,7 +64,7 @@ public class AdminUserController {
             @ApiResponse(responseCode = "409", description = "이미 승인된 관리자")
     })
     @PatchMapping("/{userId}/approve")
-    public UserJpaEntity approveAdmin(@PathVariable Long userId) {
-        return approveAdminService.execute(userId);
+    public UserJpaEntity approveAdmin(@AuthenticationPrincipal OAuth2User admin, @PathVariable Long userId) {
+        return approveAdminService.execute(admin, userId);
     }
 }
