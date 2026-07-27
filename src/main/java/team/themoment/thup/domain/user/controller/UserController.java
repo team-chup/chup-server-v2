@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import team.themoment.thup.domain.user.entity.ResumeJpaEntity;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
 import team.themoment.thup.domain.user.service.ModifyUserPhoneNumberService;
+import team.themoment.thup.domain.user.service.QueryResumeService;
 import team.themoment.thup.domain.user.service.QueryUserService;
 import team.themoment.thup.domain.user.service.UpsertResumeService;
 
@@ -25,6 +26,7 @@ public class UserController {
     private final QueryUserService queryUserService;
     private final ModifyUserPhoneNumberService modifyUserPhoneNumberService;
     private final UpsertResumeService upsertResumeService;
+    private final QueryResumeService queryResumeService;
 
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 정보를 조회합니다.")
     @ApiResponses({
@@ -59,6 +61,17 @@ public class UserController {
     @PutMapping(value = "/me/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResumeJpaEntity upsertResume(@AuthenticationPrincipal OAuth2User user, @RequestParam("file") MultipartFile file) {
         return upsertResumeService.execute(user, file);
+    }
+
+    @Operation(summary = "이력서 조회", description = "현재 로그인한 사용자의 등록된 이력서 정보를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "등록된 이력서가 없음")
+    })
+    @GetMapping("/me/resume")
+    public ResumeJpaEntity queryResume(@AuthenticationPrincipal OAuth2User user) {
+        return queryResumeService.execute(user);
     }
 
     private record PhoneNumberRequest(String phoneNumber) {}
