@@ -108,13 +108,14 @@ public class JobController {
                 recruitStart, recruitEnd, positionNames, attachments);
     }
 
-    @Operation(summary = "공고 수정", description = "채용 공고 정보를 수정합니다. 첨부파일을 함께 보내면 기존 첨부파일을 전량 교체합니다.")
+    @Operation(summary = "공고 수정", description = "채용 공고 정보를 수정합니다. positionNames를 보내면 포지션 목록을 동기화하고(신규 추가/미포함분 삭제), 지원자가 있는 포지션은 삭제하지 않고 409를 반환합니다. 첨부파일을 함께 보내면 기존 첨부파일을 전량 교체합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공"),
             @ApiResponse(responseCode = "400", description = "지원하지 않는 첨부파일 형식"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "공고를 찾을 수 없음"),
+            @ApiResponse(responseCode = "409", description = "지원자가 있는 포지션을 삭제하려 함"),
             @ApiResponse(responseCode = "413", description = "첨부파일 개수·용량 초과")
     })
     @PatchMapping(value = "/api/admin/jobs/{jobId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -124,9 +125,10 @@ public class JobController {
                                                  @RequestParam EmploymentType employmentType,
                                                  @RequestParam LocalDate recruitStart,
                                                  @RequestParam LocalDate recruitEnd,
+                                                 @RequestParam(required = false) List<String> positionNames,
                                                  @RequestParam(required = false) List<MultipartFile> attachments) {
         return modifyJobPostingService.execute(jobId, companyName, description, employmentType,
-                recruitStart, recruitEnd, attachments);
+                recruitStart, recruitEnd, positionNames, attachments);
     }
 
     @Operation(summary = "공고 상태 변경", description = "채용 공고의 모집 상태를 변경합니다.")

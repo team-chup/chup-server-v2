@@ -15,6 +15,8 @@ public interface ApplicationRepository extends JpaRepository<ApplicationJpaEntit
 
     boolean existsByUser_IdAndJobPosting_Id(Long userId, Long jobPostingId);
 
+    boolean existsByJobPosition_Id(Long jobPositionId);
+
     @Query("select a.jobPosting.id from ApplicationJpaEntity a where a.user.id = :userId")
     List<Long> findJobPostingIdsByUser_Id(Long userId);
 

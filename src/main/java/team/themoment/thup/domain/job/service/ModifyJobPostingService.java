@@ -6,11 +6,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import team.themoment.sdk.exception.ExpectedException;
+import team.themoment.thup.domain.application.repository.ApplicationRepository;
 import team.themoment.thup.domain.job.entity.AttachmentJpaEntity;
+import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
 import team.themoment.thup.domain.job.entity.constant.AttachmentFileType;
 import team.themoment.thup.domain.job.entity.constant.EmploymentType;
 import team.themoment.thup.domain.job.repository.AttachmentRepository;
+import team.themoment.thup.domain.job.repository.JobPositionRepository;
 import team.themoment.thup.domain.job.repository.JobPostingRepository;
 import team.themoment.thup.domain.job.util.AttachmentFileTypeResolver;
 import team.themoment.thup.global.storage.FileStorageService;
@@ -19,6 +22,8 @@ import team.themoment.thup.global.storage.StoredFile;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,21 +34,67 @@ public class ModifyJobPostingService {
     private static final long MAX_ATTACHMENT_SIZE_BYTES = 10L * 1024 * 1024;
 
     private final JobPostingRepository jobPostingRepository;
+    private final JobPositionRepository jobPositionRepository;
     private final AttachmentRepository attachmentRepository;
+    private final ApplicationRepository applicationRepository;
     private final FileStorageService fileStorageService;
 
     public JobPostingJpaEntity execute(Long jobId, String companyName, String description,
                                         EmploymentType employmentType, LocalDate recruitStart, LocalDate recruitEnd,
-                                        List<MultipartFile> attachments) {
+                                        List<String> positionNames, List<MultipartFile> attachments) {
         JobPostingJpaEntity jobPosting = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ExpectedException("공고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         jobPosting.update(companyName, description, employmentType, recruitStart, recruitEnd);
+
+        if (positionNames != null) {
+            updatePositions(jobPosting, positionNames);
+        }
 
         if (attachments != null && !attachments.isEmpty()) {
             replaceAttachments(jobPosting, attachments);
         }
 
         return jobPosting;
+    }
+
+    private void updatePositions(JobPostingJpaEntity jobPosting, List<String> positionNames) {
+        Set<String> newNames = positionNames.stream()
+                .map(String::trim)
+                .filter(name -> !name.isBlank())
+                .collect(Collectors.toSet());
+
+        List<JobPositionJpaEntity> existing = jobPositionRepository.findAllByJobPosting_Id(jobPosting.getId());
+        Set<String> existingNames = existing.stream()
+                .map(JobPositionJpaEntity::getName)
+                .collect(Collectors.toSet());
+
+        List<String> blockedByApplicants = new ArrayList<>();
+        for (JobPositionJpaEntity position : existing) {
+            if (newNames.contains(position.getName())) {
+                continue;
+            }
+            if (applicationRepository.existsByJobPosition_Id(position.getId())) {
+                blockedByApplicants.add(position.getName());
+                continue;
+            }
+            jobPositionRepository.delete(position);
+        }
+
+        if (!blockedByApplicants.isEmpty()) {
+            throw new ExpectedException(
+                    "지원자가 있는 포지션은 삭제할 수 없습니다: " + String.join(", ", blockedByApplicants),
+                    HttpStatus.CONFLICT
+            );
+        }
+
+        newNames.stream()
+                .filter(name -> !existingNames.contains(name))
+                .forEach(name -> jobPositionRepository.save(
+                        JobPositionJpaEntity.builder()
+                                .jobPosting(jobPosting)
+                                .name(name)
+                                .build()
+                ));
     }
 
     private void replaceAttachments(JobPostingJpaEntity jobPosting, List<MultipartFile> attachments) {
