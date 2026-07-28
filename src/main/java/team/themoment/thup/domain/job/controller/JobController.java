@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import team.themoment.thup.domain.job.dto.AdminJobPostingResponse;
 import team.themoment.thup.domain.job.dto.JobPostingDetailResponse;
+import team.themoment.thup.domain.job.dto.JobPostingSummaryResponse;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
 import team.themoment.thup.domain.job.entity.constant.EmploymentType;
 import team.themoment.thup.domain.job.entity.constant.JobPostingStatus;
@@ -42,16 +43,16 @@ public class JobController {
     private final ModifyJobPostingService modifyJobPostingService;
     private final ModifyJobPostingStatusService modifyJobPostingStatusService;
 
-    @Operation(summary = "채용 공고 목록", description = "모집중인 채용 공고 목록을 검색/필터/정렬하여 조회합니다.")
+    @Operation(summary = "채용 공고 목록", description = "모집중인 채용 공고 목록을 검색/필터/정렬하여 조회합니다. 공고별 모집 포지션 목록을 함께 반환합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     @GetMapping("/api/jobs")
-    public List<JobPostingJpaEntity> queryJobPostings(@RequestParam(required = false) String q,
-                                                        @RequestParam(required = false) String position,
-                                                        @RequestParam(required = false) EmploymentType employmentType,
-                                                        @RequestParam(required = false) String sort) {
+    public List<JobPostingSummaryResponse> queryJobPostings(@RequestParam(required = false) String q,
+                                                              @RequestParam(required = false) String position,
+                                                              @RequestParam(required = false) EmploymentType employmentType,
+                                                              @RequestParam(required = false) String sort) {
         return queryJobPostingsService.execute(q, position, employmentType, sort);
     }
 

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team.themoment.sdk.exception.ExpectedException;
+import team.themoment.thup.domain.job.dto.JobPostingSummaryResponse;
 import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
 import team.themoment.thup.domain.job.entity.constant.EmploymentType;
@@ -28,30 +29,25 @@ public class QueryJobPostingsService {
     private final JobPostingRepository jobPostingRepository;
     private final JobPositionRepository jobPositionRepository;
 
-    public List<JobPostingJpaEntity> execute(String q, String position, EmploymentType employmentType, String sort) {
+    public List<JobPostingSummaryResponse> execute(String q, String position, EmploymentType employmentType, String sort) {
         List<JobPostingJpaEntity> jobPostings = jobPostingRepository.findAllByStatus(JobPostingStatus.RECRUITING);
+
+        Map<Long, List<JobPositionJpaEntity>> positionsByJobId = jobPositionRepository
+                .findAllByJobPosting_IdIn(jobPostings.stream().map(JobPostingJpaEntity::getId).toList())
+                .stream()
+                .collect(Collectors.groupingBy(p -> p.getJobPosting().getId()));
 
         String keyword = normalize(q);
         String positionFilter = normalize(position);
 
-        Map<Long, List<String>> positionNamesByJobId = (keyword == null && positionFilter == null)
-                ? Map.of()
-                : jobPositionRepository
-                        .findAllByJobPosting_IdIn(jobPostings.stream().map(JobPostingJpaEntity::getId).toList())
-                        .stream()
-                        .collect(Collectors.groupingBy(
-                                p -> p.getJobPosting().getId(),
-                                Collectors.mapping(JobPositionJpaEntity::getName, Collectors.toList())
-                        ));
-
         List<JobPostingJpaEntity> filtered = jobPostings.stream()
                 .filter(job -> employmentType == null || job.getEmploymentType() == employmentType)
-                .filter(job -> positionFilter == null || positionNamesByJobId.getOrDefault(job.getId(), List.of())
-                        .stream().anyMatch(name -> name.equalsIgnoreCase(positionFilter)))
+                .filter(job -> positionFilter == null || positionsByJobId.getOrDefault(job.getId(), List.of())
+                        .stream().anyMatch(p -> p.getName().equalsIgnoreCase(positionFilter)))
                 .filter(job -> keyword == null
                         || job.getCompanyName().toLowerCase().contains(keyword)
-                        || positionNamesByJobId.getOrDefault(job.getId(), List.of())
-                                .stream().anyMatch(name -> name.toLowerCase().contains(keyword)))
+                        || positionsByJobId.getOrDefault(job.getId(), List.of())
+                                .stream().anyMatch(p -> p.getName().toLowerCase().contains(keyword)))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         if (sort != null && !sort.isBlank()) {
@@ -61,7 +57,9 @@ public class QueryJobPostingsService {
             filtered.sort(Comparator.comparing(JobPostingJpaEntity::getRecruitEnd));
         }
 
-        return filtered;
+        return filtered.stream()
+                .map(job -> JobPostingSummaryResponse.of(job, positionsByJobId.getOrDefault(job.getId(), List.of())))
+                .toList();
     }
 
     private String normalize(String value) {

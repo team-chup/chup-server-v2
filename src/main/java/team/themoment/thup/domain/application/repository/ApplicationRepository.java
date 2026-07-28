@@ -9,10 +9,6 @@ import java.util.List;
 
 public interface ApplicationRepository extends JpaRepository<ApplicationJpaEntity, Long> {
 
-    List<ApplicationJpaEntity> findAllByUser_Id(Long userId);
-
-    List<ApplicationJpaEntity> findAllByJobPosting_Id(Long jobPostingId);
-
     boolean existsByUser_IdAndJobPosting_Id(Long userId, Long jobPostingId);
 
     boolean existsByJobPosition_Id(Long jobPositionId);
@@ -30,4 +26,13 @@ public interface ApplicationRepository extends JpaRepository<ApplicationJpaEntit
 
     @Query("select a.jobPosting.id, count(a) from ApplicationJpaEntity a where a.jobPosting.id in :jobPostingIds group by a.jobPosting.id")
     List<Object[]> countGroupedByJobPostingIdIn(List<Long> jobPostingIds);
+
+    @Query("select a from ApplicationJpaEntity a join fetch a.jobPosting join fetch a.jobPosition where a.user.id = :userId")
+    List<ApplicationJpaEntity> findAllWithJobByUser_Id(Long userId);
+
+    @Query("select a from ApplicationJpaEntity a join fetch a.user join fetch a.jobPosting join fetch a.jobPosition")
+    List<ApplicationJpaEntity> findAllWithDetails();
+
+    @Query("select a from ApplicationJpaEntity a join fetch a.user join fetch a.jobPosting join fetch a.jobPosition where a.jobPosting.id = :jobPostingId")
+    List<ApplicationJpaEntity> findAllWithDetailsByJobPosting_Id(Long jobPostingId);
 }
