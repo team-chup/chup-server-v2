@@ -10,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
-import team.themoment.thup.domain.application.entity.ApplicationJpaEntity;
+import team.themoment.thup.domain.application.dto.AdminApplicantResponse;
+import team.themoment.thup.domain.application.dto.ApplicationResponse;
 import team.themoment.thup.domain.application.entity.constant.ApplicationStatus;
 import team.themoment.thup.domain.application.service.ApplyJobService;
 import team.themoment.thup.domain.application.service.ModifyApplicationResultService;
@@ -43,8 +44,8 @@ public class ApplicationController {
             @ApiResponse(responseCode = "409", description = "이미 지원한 공고")
     })
     @PostMapping("/api/jobs/{jobId}/applications")
-    public ApplicationJpaEntity apply(@AuthenticationPrincipal OAuth2User user, @PathVariable Long jobId,
-                                       @RequestBody ApplyRequest request) {
+    public ApplicationResponse apply(@AuthenticationPrincipal OAuth2User user, @PathVariable Long jobId,
+                                      @RequestBody ApplyRequest request) {
         return applyJobService.execute(user, jobId, request.jobPositionId());
     }
 
@@ -54,7 +55,7 @@ public class ApplicationController {
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     })
     @GetMapping("/api/applications")
-    public List<ApplicationJpaEntity> queryMyApplications(@AuthenticationPrincipal OAuth2User user) {
+    public List<ApplicationResponse> queryMyApplications(@AuthenticationPrincipal OAuth2User user) {
         return queryMyApplicationsService.execute(user);
     }
 
@@ -65,7 +66,7 @@ public class ApplicationController {
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
     @GetMapping("/api/admin/applicants")
-    public List<ApplicationJpaEntity> queryApplicants(@RequestParam(required = false) Long jobPostingId) {
+    public List<AdminApplicantResponse> queryApplicants(@RequestParam(required = false) Long jobPostingId) {
         return queryApplicantsService.execute(jobPostingId);
     }
 
@@ -101,7 +102,7 @@ public class ApplicationController {
             @ApiResponse(responseCode = "404", description = "지원 내역을 찾을 수 없음")
     })
     @PatchMapping("/api/admin/applicants/{applicationId}/result")
-    public ApplicationJpaEntity modifyApplicationResult(@PathVariable Long applicationId, @RequestBody ResultRequest request) {
+    public AdminApplicantResponse modifyApplicationResult(@PathVariable Long applicationId, @RequestBody ResultRequest request) {
         return modifyApplicationResultService.execute(applicationId, request.status());
     }
 

@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team.themoment.sdk.exception.ExpectedException;
+import team.themoment.thup.domain.application.dto.ApplicationResponse;
 import team.themoment.thup.domain.application.entity.ApplicationJpaEntity;
 import team.themoment.thup.domain.application.mail.ApplicationEmailTemplates;
 import team.themoment.thup.domain.application.repository.ApplicationRepository;
@@ -31,7 +32,7 @@ public class ApplyJobService {
     private final ResumeRepository resumeRepository;
     private final MailService mailService;
 
-    public ApplicationJpaEntity execute(OAuth2User user, Long jobId, Long jobPositionId) {
+    public ApplicationResponse execute(OAuth2User user, Long jobId, Long jobPositionId) {
         Long userId = ((Number) user.getAttribute("id")).longValue();
 
         if (applicationRepository.existsByUser_IdAndJobPosting_Id(userId, jobId)) {
@@ -62,6 +63,6 @@ public class ApplyJobService {
                 ApplicationEmailTemplates.appliedBody(jobPosting.getCompanyName(), jobPosition.getName())
         );
 
-        return application;
+        return ApplicationResponse.from(application);
     }
 }

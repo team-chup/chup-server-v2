@@ -31,8 +31,8 @@ public class QueryApplicantResumesZipService {
 
     public FileDownload execute(Long companyId) {
         List<ApplicationJpaEntity> applications = companyId == null
-                ? applicationRepository.findAll()
-                : applicationRepository.findAllByJobPosting_Id(companyId);
+                ? applicationRepository.findAllWithDetails()
+                : applicationRepository.findAllWithDetailsByJobPosting_Id(companyId);
 
         if (applications.isEmpty()) {
             throw new ExpectedException("지원자가 없습니다.", HttpStatus.NOT_FOUND);
