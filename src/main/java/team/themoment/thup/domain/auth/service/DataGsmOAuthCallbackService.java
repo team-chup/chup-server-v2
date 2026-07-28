@@ -38,7 +38,11 @@ public class DataGsmOAuthCallbackService {
     private final DataGsmOAuthProperties dataGsmOAuthProperties;
     private final UserRepository userRepository;
 
-    public String execute(String code, String state, String stateCookie, HttpServletRequest request) {
+    public String execute(String code, String state, String stateCookie, String redirectOriginCookie, HttpServletRequest request) {
+        String redirectOrigin = dataGsmOAuthProperties.isAllowedOrigin(redirectOriginCookie)
+                ? redirectOriginCookie
+                : dataGsmOAuthProperties.defaultRedirectOrigin();
+
         try {
             if (state == null || !state.equals(stateCookie)) {
                 throw new ExpectedException("유효하지 않은 state 값입니다.", HttpStatus.BAD_REQUEST);
@@ -54,10 +58,10 @@ public class DataGsmOAuthCallbackService {
             UserJpaEntity user = getOrCreateUser(userInfo);
             authenticate(user, request);
 
-            return dataGsmOAuthProperties.successRedirectUrl();
+            return redirectOrigin + dataGsmOAuthProperties.successRedirectPath();
         } catch (DataGsmException | ExpectedException e) {
             log.warn("DataGSM OAuth 로그인 실패: {}", e.getMessage());
-            return dataGsmOAuthProperties.failureRedirectUrl();
+            return redirectOrigin + dataGsmOAuthProperties.failureRedirectPath();
         }
     }
 

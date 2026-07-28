@@ -60,8 +60,12 @@ oauth:
     client-id: ${DATAGSM_CLIENT_ID}
     client-secret: ${DATAGSM_CLIENT_SECRET}
     redirect-uri: ${DATAGSM_REDIRECT_URI:http://localhost:8080/api/auth/datagsm/callback}
-    success-redirect-url: ${OAUTH_SUCCESS_REDIRECT_URL:http://localhost:3000}
-    failure-redirect-url: ${OAUTH_FAILURE_REDIRECT_URL:http://localhost:3000/login/error}
+    # 로그인 시작 시 프론트가 전달한 redirectOrigin이 이 목록에 있어야 로그인 성공/실패 후 해당 origin으로 리다이렉트합니다.
+    allowed-redirect-origins: ${OAUTH_ALLOWED_REDIRECT_ORIGINS:http://localhost:3000,http://localhost:3001}
+    # redirectOrigin이 없거나 허용 목록에 없을 때 사용하는 기본값
+    default-redirect-origin: ${OAUTH_DEFAULT_REDIRECT_ORIGIN:http://localhost:3000}
+    success-redirect-path: ${OAUTH_SUCCESS_REDIRECT_PATH:/}
+    failure-redirect-path: ${OAUTH_FAILURE_REDIRECT_PATH:/login/error}
 
 cors:
   # 콤마로 구분해 여러 origin 지정 가능 (예: http://localhost:3000,http://localhost:3001)

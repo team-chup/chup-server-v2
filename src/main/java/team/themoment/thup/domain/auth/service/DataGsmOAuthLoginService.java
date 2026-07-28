@@ -16,11 +16,15 @@ public class DataGsmOAuthLoginService {
     private final DataGsmOAuthClient dataGsmOAuthClient;
     private final DataGsmOAuthProperties dataGsmOAuthProperties;
 
-    public AuthorizationUrlResult execute() {
+    public AuthorizationUrlResult execute(String requestedRedirectOrigin) {
         String state = UUID.randomUUID().toString();
+        String redirectOrigin = dataGsmOAuthProperties.isAllowedOrigin(requestedRedirectOrigin)
+                ? requestedRedirectOrigin
+                : dataGsmOAuthProperties.defaultRedirectOrigin();
+
         AuthorizationUrlBuilder builder = dataGsmOAuthClient
                 .createAuthorizationUrl(dataGsmOAuthProperties.redirectUri())
                 .state(state);
-        return new AuthorizationUrlResult(builder.build(), state);
+        return new AuthorizationUrlResult(builder.build(), state, redirectOrigin);
     }
 }

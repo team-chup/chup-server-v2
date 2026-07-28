@@ -26,6 +26,7 @@ import java.io.IOException;
 public class AuthController {
 
     private static final String STATE_COOKIE_NAME = "datagsm_oauth_state";
+    private static final String REDIRECT_ORIGIN_COOKIE_NAME = "datagsm_oauth_redirect_origin";
     private static final int STATE_COOKIE_MAX_AGE_SECONDS = 300;
 
     private final DataGsmOAuthLoginService dataGsmOAuthLoginService;
@@ -33,19 +34,25 @@ public class AuthController {
     private final QueryMyAuthInfoService queryMyAuthInfoService;
     private final LogoutService logoutService;
 
-    @Operation(summary = "DataGSM OAuth 로그인 시작", description = "DataGSM 로그인 페이지로 리다이렉트합니다.")
+    @Operation(summary = "DataGSM OAuth 로그인 시작", description = "DataGSM 로그인 페이지로 리다이렉트합니다. redirectOrigin으로 로그인 완료 후 돌아갈 프론트 origin을 지정할 수 있습니다(허용 목록에 없으면 기본값 사용).")
     @ApiResponses({
             @ApiResponse(responseCode = "302", description = "DataGSM 인가 페이지로 리다이렉트")
     })
     @GetMapping("/datagsm/login")
-    public void login(HttpServletResponse response) throws IOException {
-        AuthorizationUrlResult result = dataGsmOAuthLoginService.execute();
+    public void login(@RequestParam(required = false) String redirectOrigin, HttpServletResponse response) throws IOException {
+        AuthorizationUrlResult result = dataGsmOAuthLoginService.execute(redirectOrigin);
 
         Cookie stateCookie = new Cookie(STATE_COOKIE_NAME, result.state());
         stateCookie.setHttpOnly(true);
         stateCookie.setPath("/api/auth/datagsm/callback");
         stateCookie.setMaxAge(STATE_COOKIE_MAX_AGE_SECONDS);
         response.addCookie(stateCookie);
+
+        Cookie redirectOriginCookie = new Cookie(REDIRECT_ORIGIN_COOKIE_NAME, result.redirectOrigin());
+        redirectOriginCookie.setHttpOnly(true);
+        redirectOriginCookie.setPath("/api/auth/datagsm/callback");
+        redirectOriginCookie.setMaxAge(STATE_COOKIE_MAX_AGE_SECONDS);
+        response.addCookie(redirectOriginCookie);
 
         response.sendRedirect(result.url());
     }
@@ -58,9 +65,10 @@ public class AuthController {
     public void callback(@RequestParam String code,
                           @RequestParam String state,
                           @CookieValue(name = STATE_COOKIE_NAME, required = false) String stateCookie,
+                          @CookieValue(name = REDIRECT_ORIGIN_COOKIE_NAME, required = false) String redirectOriginCookie,
                           HttpServletRequest request,
                           HttpServletResponse response) throws IOException {
-        String redirectUrl = dataGsmOAuthCallbackService.execute(code, state, stateCookie, request);
+        String redirectUrl = dataGsmOAuthCallbackService.execute(code, state, stateCookie, redirectOriginCookie, request);
         response.sendRedirect(redirectUrl);
     }
 
