@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import team.themoment.sdk.exception.ExpectedException;
+import team.themoment.thup.domain.user.dto.ResumeResponse;
 import team.themoment.thup.domain.user.entity.ResumeJpaEntity;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
 import team.themoment.thup.domain.user.repository.ResumeRepository;
@@ -17,37 +18,38 @@ import team.themoment.thup.global.storage.StoredFile;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UpsertResumeService {
+public class RegisterResumeService {
 
+    private static final int MAX_RESUMES = 3;
     private static final long MAX_RESUME_SIZE_BYTES = 10L * 1024 * 1024;
 
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
-    public ResumeJpaEntity execute(OAuth2User user, MultipartFile file) {
+    public ResumeResponse execute(OAuth2User user, MultipartFile file) {
         Long userId = ((Number) user.getAttribute("id")).longValue();
         validate(file);
 
+        if (resumeRepository.countByUser_Id(userId) >= MAX_RESUMES) {
+            throw new ExpectedException("이력서는 최대 " + MAX_RESUMES + "개까지 등록할 수 있습니다.", HttpStatus.CONFLICT);
+        }
+
+        UserJpaEntity foundUser = userRepository.findById(userId)
+                .orElseThrow(() -> new ExpectedException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
         StoredFile stored = fileStorageService.store(file, "resumes/" + userId);
 
-        return resumeRepository.findByUser_Id(userId)
-                .map(resume -> {
-                    resume.update(stored.originalFileName(), stored.storageKey(), (int) stored.size());
-                    return resume;
-                })
-                .orElseGet(() -> {
-                    UserJpaEntity foundUser = userRepository.findById(userId)
-                            .orElseThrow(() -> new ExpectedException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-                    return resumeRepository.save(
-                            ResumeJpaEntity.builder()
-                                    .user(foundUser)
-                                    .fileName(stored.originalFileName())
-                                    .fileUrl(stored.storageKey())
-                                    .fileSize((int) stored.size())
-                                    .build()
-                    );
-                });
+        ResumeJpaEntity saved = resumeRepository.save(
+                ResumeJpaEntity.builder()
+                        .user(foundUser)
+                        .fileName(stored.originalFileName())
+                        .fileUrl(stored.storageKey())
+                        .fileSize((int) stored.size())
+                        .build()
+        );
+
+        return ResumeResponse.from(saved);
     }
 
     private void validate(MultipartFile file) {
