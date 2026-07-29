@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import team.themoment.sdk.exception.ExpectedException;
 import team.themoment.thup.domain.application.repository.ApplicationRepository;
+import team.themoment.thup.domain.job.dto.JobPostingDetailResponse;
 import team.themoment.thup.domain.job.entity.AttachmentJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
@@ -39,9 +40,9 @@ public class ModifyJobPostingService {
     private final ApplicationRepository applicationRepository;
     private final FileStorageService fileStorageService;
 
-    public JobPostingJpaEntity execute(Long jobId, String companyName, String description,
-                                        EmploymentType employmentType, LocalDate recruitStart, LocalDate recruitEnd,
-                                        List<String> positionNames, List<MultipartFile> attachments) {
+    public JobPostingDetailResponse execute(Long jobId, String companyName, String description,
+                                             EmploymentType employmentType, LocalDate recruitStart, LocalDate recruitEnd,
+                                             List<String> positionNames, List<MultipartFile> attachments) {
         JobPostingJpaEntity jobPosting = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ExpectedException("공고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         jobPosting.update(companyName, description, employmentType, recruitStart, recruitEnd);
@@ -54,7 +55,9 @@ public class ModifyJobPostingService {
             replaceAttachments(jobPosting, attachments);
         }
 
-        return jobPosting;
+        List<JobPositionJpaEntity> currentPositions = jobPositionRepository.findAllByJobPosting_Id(jobId);
+        List<AttachmentJpaEntity> currentAttachments = attachmentRepository.findAllByJobPosting_Id(jobId);
+        return JobPostingDetailResponse.of(jobPosting, currentPositions, currentAttachments);
     }
 
     private void updatePositions(JobPostingJpaEntity jobPosting, List<String> positionNames) {

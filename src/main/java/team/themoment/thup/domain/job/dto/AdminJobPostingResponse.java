@@ -1,11 +1,13 @@
 package team.themoment.thup.domain.job.dto;
 
+import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
 import team.themoment.thup.domain.job.entity.constant.EmploymentType;
 import team.themoment.thup.domain.job.entity.constant.JobPostingStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record AdminJobPostingResponse(
         Long id,
@@ -16,10 +18,11 @@ public record AdminJobPostingResponse(
         LocalDate recruitEnd,
         JobPostingStatus status,
         LocalDateTime createdAt,
-        long applicantCount
+        long applicantCount,
+        List<PositionResponse> positions
 ) {
 
-    public static AdminJobPostingResponse of(JobPostingJpaEntity jobPosting, long applicantCount) {
+    public static AdminJobPostingResponse of(JobPostingJpaEntity jobPosting, long applicantCount, List<JobPositionJpaEntity> positions) {
         return new AdminJobPostingResponse(
                 jobPosting.getId(),
                 jobPosting.getCompanyName(),
@@ -29,7 +32,8 @@ public record AdminJobPostingResponse(
                 jobPosting.getRecruitEnd(),
                 jobPosting.getStatus(),
                 jobPosting.getCreatedAt(),
-                applicantCount
+                applicantCount,
+                positions.stream().map(PositionResponse::from).toList()
         );
     }
 }

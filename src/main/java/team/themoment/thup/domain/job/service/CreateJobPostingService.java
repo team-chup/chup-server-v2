@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import team.themoment.sdk.exception.ExpectedException;
+import team.themoment.thup.domain.job.dto.JobPostingDetailResponse;
 import team.themoment.thup.domain.job.entity.AttachmentJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
@@ -22,6 +23,7 @@ import team.themoment.thup.global.storage.FileStorageService;
 import team.themoment.thup.global.storage.StoredFile;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -38,9 +40,9 @@ public class CreateJobPostingService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
-    public JobPostingJpaEntity execute(OAuth2User admin, String companyName, String description,
-                                        EmploymentType employmentType, LocalDate recruitStart, LocalDate recruitEnd,
-                                        List<String> positionNames, List<MultipartFile> attachments) {
+    public JobPostingDetailResponse execute(OAuth2User admin, String companyName, String description,
+                                             EmploymentType employmentType, LocalDate recruitStart, LocalDate recruitEnd,
+                                             List<String> positionNames, List<MultipartFile> attachments) {
         validateAttachments(attachments);
 
         Long adminId = ((Number) admin.getAttribute("id")).longValue();
@@ -58,16 +60,18 @@ public class CreateJobPostingService {
                         .build()
         );
 
-        positionNames.forEach(name -> jobPositionRepository.save(
-                JobPositionJpaEntity.builder()
-                        .jobPosting(saved)
-                        .name(name)
-                        .build()
-        ));
+        List<JobPositionJpaEntity> savedPositions = positionNames.stream()
+                .map(name -> jobPositionRepository.save(
+                        JobPositionJpaEntity.builder()
+                                .jobPosting(saved)
+                                .name(name)
+                                .build()
+                ))
+                .toList();
 
-        saveAttachments(saved, attachments);
+        List<AttachmentJpaEntity> savedAttachments = saveAttachments(saved, attachments);
 
-        return saved;
+        return JobPostingDetailResponse.of(saved, savedPositions, savedAttachments);
     }
 
     private void validateAttachments(List<MultipartFile> attachments) {
@@ -84,15 +88,16 @@ public class CreateJobPostingService {
         }
     }
 
-    private void saveAttachments(JobPostingJpaEntity jobPosting, List<MultipartFile> attachments) {
+    private List<AttachmentJpaEntity> saveAttachments(JobPostingJpaEntity jobPosting, List<MultipartFile> attachments) {
         if (attachments == null) {
-            return;
+            return List.of();
         }
+        List<AttachmentJpaEntity> saved = new ArrayList<>(attachments.size());
         for (MultipartFile file : attachments) {
             AttachmentFileType fileType = AttachmentFileTypeResolver.resolve(file);
             StoredFile stored = fileStorageService.store(file, "job-attachments/" + jobPosting.getId());
 
-            attachmentRepository.save(
+            saved.add(attachmentRepository.save(
                     AttachmentJpaEntity.builder()
                             .jobPosting(jobPosting)
                             .fileName(stored.originalFileName())
@@ -100,7 +105,8 @@ public class CreateJobPostingService {
                             .fileType(fileType)
                             .fileSize((int) stored.size())
                             .build()
-            );
+            ));
         }
+        return saved;
     }
 }

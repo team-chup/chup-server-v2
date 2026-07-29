@@ -23,10 +23,4 @@ public record JobPostingSummaryResponse(
                 positions.stream().map(PositionResponse::from).toList()
         );
     }
-
-    public record PositionResponse(Long id, String name) {
-        public static PositionResponse from(JobPositionJpaEntity position) {
-            return new PositionResponse(position.getId(), position.getName());
-        }
-    }
 }
