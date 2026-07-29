@@ -65,6 +65,9 @@ public class SecurityConfig {
         serializer.setSameSite(sessionCookieProperties.sameSite());
         serializer.setUseSecureCookie(sessionCookieProperties.secure());
         serializer.setCookiePath("/");
+        if (sessionCookieProperties.hasDomain()) {
+            serializer.setDomainName(sessionCookieProperties.domain());
+        }
         return serializer;
     }
 }

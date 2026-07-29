@@ -8,6 +8,10 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "session.cookie")
 public record SessionCookieProperties(
         boolean secure,
-        @NotBlank String sameSite
+        @NotBlank String sameSite,
+        String domain
 ) {
+    public boolean hasDomain() {
+        return domain != null && !domain.isBlank();
+    }
 }
