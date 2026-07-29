@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import team.themoment.thup.domain.job.dto.AdminJobPostingResponse;
 import team.themoment.thup.domain.job.dto.JobPostingDetailResponse;
 import team.themoment.thup.domain.job.dto.JobPostingSummaryResponse;
-import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
 import team.themoment.thup.domain.job.entity.constant.EmploymentType;
 import team.themoment.thup.domain.job.entity.constant.JobPostingStatus;
 import team.themoment.thup.domain.job.service.CreateJobPostingService;
@@ -99,14 +98,14 @@ public class JobController {
             @ApiResponse(responseCode = "413", description = "첨부파일 개수·용량 초과")
     })
     @PostMapping(value = "/api/admin/jobs", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public JobPostingJpaEntity createJobPosting(@AuthenticationPrincipal OAuth2User admin,
-                                                 @RequestParam String companyName,
-                                                 @RequestParam String description,
-                                                 @RequestParam EmploymentType employmentType,
-                                                 @RequestParam LocalDate recruitStart,
-                                                 @RequestParam LocalDate recruitEnd,
-                                                 @RequestParam List<String> positionNames,
-                                                 @RequestParam(required = false) List<MultipartFile> attachments) {
+    public JobPostingDetailResponse createJobPosting(@AuthenticationPrincipal OAuth2User admin,
+                                                      @RequestParam String companyName,
+                                                      @RequestParam String description,
+                                                      @RequestParam EmploymentType employmentType,
+                                                      @RequestParam LocalDate recruitStart,
+                                                      @RequestParam LocalDate recruitEnd,
+                                                      @RequestParam List<String> positionNames,
+                                                      @RequestParam(required = false) List<MultipartFile> attachments) {
         return createJobPostingService.execute(admin, companyName, description, employmentType,
                 recruitStart, recruitEnd, positionNames, attachments);
     }
@@ -122,14 +121,14 @@ public class JobController {
             @ApiResponse(responseCode = "413", description = "첨부파일 개수·용량 초과")
     })
     @PatchMapping(value = "/api/admin/jobs/{jobId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public JobPostingJpaEntity modifyJobPosting(@PathVariable Long jobId,
-                                                 @RequestParam String companyName,
-                                                 @RequestParam String description,
-                                                 @RequestParam EmploymentType employmentType,
-                                                 @RequestParam LocalDate recruitStart,
-                                                 @RequestParam LocalDate recruitEnd,
-                                                 @RequestParam(required = false) List<String> positionNames,
-                                                 @RequestParam(required = false) List<MultipartFile> attachments) {
+    public JobPostingDetailResponse modifyJobPosting(@PathVariable Long jobId,
+                                                      @RequestParam String companyName,
+                                                      @RequestParam String description,
+                                                      @RequestParam EmploymentType employmentType,
+                                                      @RequestParam LocalDate recruitStart,
+                                                      @RequestParam LocalDate recruitEnd,
+                                                      @RequestParam(required = false) List<String> positionNames,
+                                                      @RequestParam(required = false) List<MultipartFile> attachments) {
         return modifyJobPostingService.execute(jobId, companyName, description, employmentType,
                 recruitStart, recruitEnd, positionNames, attachments);
     }
@@ -142,7 +141,7 @@ public class JobController {
             @ApiResponse(responseCode = "404", description = "공고를 찾을 수 없음")
     })
     @PatchMapping("/api/admin/jobs/{jobId}/status")
-    public JobPostingJpaEntity modifyJobPostingStatus(@PathVariable Long jobId, @RequestBody JobPostingStatusRequest request) {
+    public JobPostingDetailResponse modifyJobPostingStatus(@PathVariable Long jobId, @RequestBody JobPostingStatusRequest request) {
         return modifyJobPostingStatusService.execute(jobId, request.status());
     }
 

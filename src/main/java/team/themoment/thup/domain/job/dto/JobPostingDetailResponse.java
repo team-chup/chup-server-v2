@@ -40,12 +40,6 @@ public record JobPostingDetailResponse(
         );
     }
 
-    public record PositionResponse(Long id, String name) {
-        public static PositionResponse from(JobPositionJpaEntity position) {
-            return new PositionResponse(position.getId(), position.getName());
-        }
-    }
-
     public record AttachmentResponse(Long id, String fileName) {
         public static AttachmentResponse from(AttachmentJpaEntity attachment) {
             return new AttachmentResponse(attachment.getId(), attachment.getFileName());
