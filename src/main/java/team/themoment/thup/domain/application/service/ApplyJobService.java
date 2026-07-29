@@ -32,7 +32,7 @@ public class ApplyJobService {
     private final ResumeRepository resumeRepository;
     private final MailService mailService;
 
-    public ApplicationResponse execute(OAuth2User user, Long jobId, Long jobPositionId) {
+    public ApplicationResponse execute(OAuth2User user, Long jobId, Long jobPositionId, Long resumeId) {
         Long userId = ((Number) user.getAttribute("id")).longValue();
 
         if (applicationRepository.existsByUser_IdAndJobPosting_Id(userId, jobId)) {
@@ -45,8 +45,8 @@ public class ApplyJobService {
                 .orElseThrow(() -> new ExpectedException("공고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         JobPositionJpaEntity jobPosition = jobPositionRepository.findById(jobPositionId)
                 .orElseThrow(() -> new ExpectedException("포지션을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-        ResumeJpaEntity resume = resumeRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new ExpectedException("등록된 이력서가 없습니다.", HttpStatus.BAD_REQUEST));
+        ResumeJpaEntity resume = resumeRepository.findByIdAndUser_Id(resumeId, userId)
+                .orElseThrow(() -> new ExpectedException("선택한 이력서를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST));
 
         ApplicationJpaEntity application = applicationRepository.save(
                 ApplicationJpaEntity.builder()

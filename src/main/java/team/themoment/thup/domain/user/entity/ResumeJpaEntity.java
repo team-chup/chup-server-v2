@@ -2,7 +2,7 @@ package team.themoment.thup.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -19,8 +19,8 @@ public class ResumeJpaEntity {
     @Column(name = "id")
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserJpaEntity user;
 
     @Column(name = "file_name", nullable = false, length = 255)
@@ -32,13 +32,7 @@ public class ResumeJpaEntity {
     @Column(name = "file_size", nullable = false)
     private Integer fileSize;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    public void update(String fileName, String fileUrl, Integer fileSize) {
-        this.fileName = fileName;
-        this.fileUrl = fileUrl;
-        this.fileSize = fileSize;
-    }
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 }
