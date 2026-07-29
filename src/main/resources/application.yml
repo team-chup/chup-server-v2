@@ -54,7 +54,7 @@ session:
     # 운영 배포 시 반드시 SESSION_COOKIE_SECURE=true, SESSION_COOKIE_SAME_SITE=None 으로 설정하세요.
     secure: ${SESSION_COOKIE_SECURE:false}
     same-site: ${SESSION_COOKIE_SAME_SITE:Lax}
-    # 백엔드와 프론트가 같은 상위 도메인(예: chup.site)의 서로 다른 서브도메인에 배포된 경우에만 설정합니다(예: .chup.site).
+    # 백엔드와 프론트가 같은 상위 도메인(예: chup.site)의 서로 다른 서브도메인에 배포된 경우에만 설정합니다(예: chup.site, 앞에 점(.) 붙이면 안 됨 — Spring Session이 거부함).
     # 비워두면(기본값) Domain 속성 없이 host-only 쿠키로 발급되며, localhost 개발 환경은 반드시 비워둬야 합니다.
     domain: ${SESSION_COOKIE_DOMAIN:}
 
