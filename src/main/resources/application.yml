@@ -61,7 +61,7 @@ oauth:
     client-secret: ${DATAGSM_CLIENT_SECRET}
     redirect-uri: ${DATAGSM_REDIRECT_URI:http://localhost:8080/api/auth/datagsm/callback}
     # 로그인 시작 시 프론트가 전달한 redirectOrigin이 이 목록에 있어야 로그인 성공/실패 후 해당 origin으로 리다이렉트합니다.
-    allowed-redirect-origins: ${OAUTH_ALLOWED_REDIRECT_ORIGINS:http://localhost:3000,http://localhost:3001,https://dev-admin.chup.site}
+    allowed-redirect-origins: ${OAUTH_ALLOWED_REDIRECT_ORIGINS:http://localhost:3000,http://localhost:3001,https://dev-admin.chup.site,https://dev-client.chup.site}
     # redirectOrigin이 없거나 허용 목록에 없을 때 사용하는 기본값
     default-redirect-origin: ${OAUTH_DEFAULT_REDIRECT_ORIGIN:http://localhost:3000}
     success-redirect-path: ${OAUTH_SUCCESS_REDIRECT_PATH:/}
@@ -69,7 +69,7 @@ oauth:
 
 cors:
   # 콤마로 구분해 여러 origin 지정 가능 (예: http://localhost:3000,http://localhost:3001)
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001,https://dev-admin.chup.site}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001,https://dev-admin.chup.site,https://dev-client.chup.site}
 
 sdk:
   logging:
