@@ -22,6 +22,7 @@ import team.themoment.thup.global.storage.StoredFile;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,7 +43,8 @@ public class ModifyJobPostingService {
 
     public JobPostingDetailResponse execute(Long jobId, String companyName, String description,
                                              EmploymentType employmentType, LocalDate recruitStart, LocalDate recruitEnd,
-                                             List<String> positionNames, List<MultipartFile> attachments) {
+                                             List<String> positionNames, List<Long> retainedAttachmentIds,
+                                             List<MultipartFile> attachments) {
         JobPostingJpaEntity jobPosting = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ExpectedException("공고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         jobPosting.update(companyName, description, employmentType, recruitStart, recruitEnd);
@@ -51,8 +53,8 @@ public class ModifyJobPostingService {
             updatePositions(jobPosting, positionNames);
         }
 
-        if (attachments != null && !attachments.isEmpty()) {
-            replaceAttachments(jobPosting, attachments);
+        if (retainedAttachmentIds != null || (attachments != null && !attachments.isEmpty())) {
+            updateAttachments(jobPosting, retainedAttachmentIds, attachments);
         }
 
         List<JobPositionJpaEntity> currentPositions = jobPositionRepository.findAllByJobPosting_Id(jobId);
@@ -100,25 +102,33 @@ public class ModifyJobPostingService {
                 ));
     }
 
-    private void replaceAttachments(JobPostingJpaEntity jobPosting, List<MultipartFile> attachments) {
-        if (attachments.size() > MAX_ATTACHMENTS) {
+    private void updateAttachments(JobPostingJpaEntity jobPosting, List<Long> retainedAttachmentIds, List<MultipartFile> attachments) {
+        Set<Long> retainedIds = retainedAttachmentIds == null ? Set.of() : new HashSet<>(retainedAttachmentIds);
+        List<MultipartFile> newFiles = attachments == null ? List.of() : attachments;
+
+        List<AttachmentJpaEntity> existing = attachmentRepository.findAllByJobPosting_Id(jobPosting.getId());
+        List<AttachmentJpaEntity> toDelete = existing.stream()
+                .filter(attachment -> !retainedIds.contains(attachment.getId()))
+                .toList();
+        long retainedCount = existing.size() - toDelete.size();
+
+        if (retainedCount + newFiles.size() > MAX_ATTACHMENTS) {
             throw new ExpectedException("첨부파일은 최대 " + MAX_ATTACHMENTS + "개까지 등록할 수 있습니다.", HttpStatus.PAYLOAD_TOO_LARGE);
         }
 
-        List<AttachmentFileType> fileTypes = new ArrayList<>(attachments.size());
-        for (MultipartFile file : attachments) {
+        List<AttachmentFileType> fileTypes = new ArrayList<>(newFiles.size());
+        for (MultipartFile file : newFiles) {
             if (file.getSize() > MAX_ATTACHMENT_SIZE_BYTES) {
                 throw new ExpectedException("첨부파일 용량이 너무 큽니다.", HttpStatus.PAYLOAD_TOO_LARGE);
             }
             fileTypes.add(AttachmentFileTypeResolver.resolve(file));
         }
 
-        List<AttachmentJpaEntity> existing = attachmentRepository.findAllByJobPosting_Id(jobPosting.getId());
-        attachmentRepository.deleteAll(existing);
-        existing.forEach(attachment -> fileStorageService.delete(attachment.getFileUrl()));
+        attachmentRepository.deleteAll(toDelete);
+        toDelete.forEach(attachment -> fileStorageService.delete(attachment.getFileUrl()));
 
-        for (int i = 0; i < attachments.size(); i++) {
-            MultipartFile file = attachments.get(i);
+        for (int i = 0; i < newFiles.size(); i++) {
+            MultipartFile file = newFiles.get(i);
             AttachmentFileType fileType = fileTypes.get(i);
             StoredFile stored = fileStorageService.store(file, "job-attachments/" + jobPosting.getId());
 
