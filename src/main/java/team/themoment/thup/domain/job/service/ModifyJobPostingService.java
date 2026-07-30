@@ -103,10 +103,15 @@ public class ModifyJobPostingService {
     }
 
     private void updateAttachments(JobPostingJpaEntity jobPosting, List<Long> retainedAttachmentIds, List<MultipartFile> attachments) {
-        Set<Long> retainedIds = retainedAttachmentIds == null ? Set.of() : new HashSet<>(retainedAttachmentIds);
         List<MultipartFile> newFiles = attachments == null ? List.of() : attachments;
-
         List<AttachmentJpaEntity> existing = attachmentRepository.findAllByJobPosting_Id(jobPosting.getId());
+
+        // retainedAttachmentIds를 안 보내면(null) "새 파일만 추가, 기존은 그대로 유지"가 안전한 기본값이다.
+        // 기존 전부를 지우고 싶으면 retainedAttachmentIds=[]를 명시적으로 보내야 한다.
+        Set<Long> retainedIds = retainedAttachmentIds == null
+                ? existing.stream().map(AttachmentJpaEntity::getId).collect(Collectors.toSet())
+                : new HashSet<>(retainedAttachmentIds);
+
         List<AttachmentJpaEntity> toDelete = existing.stream()
                 .filter(attachment -> !retainedIds.contains(attachment.getId()))
                 .toList();

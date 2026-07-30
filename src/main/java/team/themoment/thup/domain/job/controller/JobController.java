@@ -111,8 +111,11 @@ public class JobController {
     }
 
     @Operation(summary = "공고 수정", description = "채용 공고 정보를 수정합니다. positionNames를 보내면 포지션 목록을 동기화하고(신규 추가/미포함분 삭제), 지원자가 있는 포지션은 삭제하지 않고 409를 반환합니다. " +
-            "첨부파일은 retainedAttachmentIds(유지할 기존 첨부파일 id 목록)와 attachments(새로 추가할 파일)를 함께 보내는 방식으로 수정합니다 — retainedAttachmentIds에 없는 기존 첨부파일은 삭제되고, attachments의 파일이 추가됩니다. " +
-            "둘 다 안 보내면 첨부파일은 변경하지 않습니다. 유지+추가 합계가 5개를 넘으면 413을 반환합니다.")
+            "첨부파일은 retainedAttachmentIds(유지할 기존 첨부파일 id 목록)와 attachments(새로 추가할 파일)로 수정합니다. " +
+            "둘 다 안 보내면: 변경 없음. retainedAttachmentIds만 보내면: 그 목록에 없는 기존 파일 삭제(추가 없음). " +
+            "attachments만 보내면(retainedAttachmentIds 생략): 기존 파일은 그대로 유지하고 새 파일만 추가. " +
+            "retainedAttachmentIds와 attachments를 함께 보내면: 목록에 없는 기존 파일은 삭제하고 새 파일 추가. " +
+            "retainedAttachmentIds=[](빈 배열)을 보내면: 기존 파일 전부 삭제. 유지+추가 합계가 5개를 넘으면 413을 반환합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공"),
             @ApiResponse(responseCode = "400", description = "지원하지 않는 첨부파일 형식"),
