@@ -1,9 +1,19 @@
 api.chup.site {
 	tls /etc/caddy/certs/api-fullchain.cer /etc/caddy/certs/api.chup.site.key
+
+	# 상용에서는 API 스키마/엔드포인트 구조가 외부에 노출되지 않도록 문서 경로를 차단한다.
+	# 컨테이너 내부 healthcheck는 Caddy를 거치지 않고 localhost:8080을 직접 호출하므로 영향 없음.
+	@docs path /v3/api-docs* /swagger-ui*
+	respond @docs 404
+
 	reverse_proxy app:8080
 }
 
 ssh.gsmsv.site, localhost, caddy {
 	tls internal
+
+	@docs path /v3/api-docs* /swagger-ui*
+	respond @docs 404
+
 	reverse_proxy app:8080
 }
