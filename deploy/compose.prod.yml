@@ -23,6 +23,7 @@ services:
       - CORS_ALLOWED_ORIGINS=https://chup.site,https://admin.chup.site
       - OAUTH_ALLOWED_REDIRECT_ORIGINS=https://chup.site,https://admin.chup.site
       - OAUTH_DEFAULT_REDIRECT_ORIGIN=https://chup.site
+    mem_limit: 1.5g
     volumes:
       - storage_data:/data/storage
     depends_on:
@@ -47,6 +48,7 @@ services:
   caddy:
     image: caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
     container_name: thup-prod-caddy
+    mem_limit: 128m
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./certs:/etc/caddy/certs:ro
@@ -68,6 +70,7 @@ services:
       - MYSQL_DATABASE=thup
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - TZ=Asia/Seoul
+    mem_limit: 1g
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -88,6 +91,7 @@ services:
     # command를 문자열이 아닌 리스트로 지정하면 docker compose의 자체 토크나이징을 거치지 않아
     # 비밀번호 속 특수문자(&, *, %, " 등) 전부가 하나의 인자로 안전하게 전달된다
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
+    mem_limit: 256m
     volumes:
       - redis_data:/data
     healthcheck:
