@@ -20,9 +20,9 @@ services:
       - STORAGE_BASE_DIR=/data/storage
       - RESEND_API_KEY=${RESEND_API_KEY}
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
-      - CORS_ALLOWED_ORIGINS=https://chup.site,https://admin.chup.site
-      - OAUTH_ALLOWED_REDIRECT_ORIGINS=https://chup.site,https://admin.chup.site
-      - OAUTH_DEFAULT_REDIRECT_ORIGIN=https://chup.site
+      - CORS_ALLOWED_ORIGINS=https://client.chup.site,https://admin.chup.site
+      - OAUTH_ALLOWED_REDIRECT_ORIGINS=https://client.chup.site,https://admin.chup.site
+      - OAUTH_DEFAULT_REDIRECT_ORIGIN=https://client.chup.site
     mem_limit: 1.5g
     volumes:
       - storage_data:/data/storage
