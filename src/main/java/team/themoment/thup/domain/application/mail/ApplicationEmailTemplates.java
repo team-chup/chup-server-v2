@@ -24,7 +24,7 @@ public final class ApplicationEmailTemplates {
 
     public static String resultBody(String companyName, String positionName, ApplicationStatus status) {
         return """
-                <p>%s(%s) 포지션 지원 결과, <strong>서류 %s</strong>하셨습니다.</p>
+                <p>%s(%s) 포지션 지원 결과, <strong>%s</strong>하셨습니다.</p>
                 <p>자세한 내용은 CHUP에서 확인하실 수 있습니다.</p>
                 """.formatted(companyName, positionName, resultLabel(status));
     }
