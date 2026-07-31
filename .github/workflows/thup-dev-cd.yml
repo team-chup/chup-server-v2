@@ -61,6 +61,12 @@ jobs:
             ENVEOF
 
             docker compose --env-file .env up -d --build
+
+            # Caddyfile을 scp로 새로 올려도 이미 떠 있는 caddy 컨테이너는 교체 전 inode를 계속
+            # 참조해 옛 설정을 쓰게 된다. compose up은 서비스 정의(이미지/볼륨) 자체가 안 바뀌면
+            # caddy 컨테이너를 재생성하지 않으므로, 매 배포마다 명시적으로 reload 해줘야 한다.
+            docker exec thup-caddy caddy reload --config /etc/caddy/Caddyfile
+
             docker image prune -f
         env:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
