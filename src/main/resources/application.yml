@@ -2,12 +2,85 @@ spring:
   application:
     name: thup
 
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3307}/thup?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:1234}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      password: ${REDIS_PASSWORD:}
+      database: 1
+
+  session:
+    redis:
+      flush-mode: immediate
+      save-mode: on-set-attribute
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 60MB
+
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 3h
+  forward-headers-strategy: framework
+
+storage:
+  base-dir: ${STORAGE_BASE_DIR:./storage}
+
+mail:
+  api-key: ${RESEND_API_KEY:}
+  from-address: ${MAIL_FROM_ADDRESS:onboarding@resend.dev}
+
+session:
+  cookie:
+    # 로컬(http://localhost)은 Secure 쿠키를 거부하므로 기본값은 완화된 설정입니다.
+    # 운영 배포 시 반드시 SESSION_COOKIE_SECURE=true, SESSION_COOKIE_SAME_SITE=None 으로 설정하세요.
+    secure: ${SESSION_COOKIE_SECURE:false}
+    same-site: ${SESSION_COOKIE_SAME_SITE:Lax}
+    # 백엔드와 프론트가 같은 상위 도메인(예: chup.site)의 서로 다른 서브도메인에 배포된 경우에만 설정합니다(예: chup.site, 앞에 점(.) 붙이면 안 됨 — Spring Session이 거부함).
+    # 비워두면(기본값) Domain 속성 없이 host-only 쿠키로 발급되며, localhost 개발 환경은 반드시 비워둬야 합니다.
+    domain: ${SESSION_COOKIE_DOMAIN:}
+
+oauth:
+  datagsm:
+    client-id: ${DATAGSM_CLIENT_ID}
+    client-secret: ${DATAGSM_CLIENT_SECRET}
+    redirect-uri: ${DATAGSM_REDIRECT_URI:http://localhost:8080/api/auth/datagsm/callback}
+    # 로그인 시작 시 프론트가 전달한 redirectOrigin이 이 목록에 있어야 로그인 성공/실패 후 해당 origin으로 리다이렉트합니다.
+    allowed-redirect-origins: ${OAUTH_ALLOWED_REDIRECT_ORIGINS:http://localhost:3000,http://localhost:3001,https://dev-admin.chup.site,https://dev-client.chup.site}
+    # redirectOrigin이 없거나 허용 목록에 없을 때 사용하는 기본값
+    default-redirect-origin: ${OAUTH_DEFAULT_REDIRECT_ORIGIN:http://localhost:3000}
+    success-redirect-path: ${OAUTH_SUCCESS_REDIRECT_PATH:/}
+    failure-redirect-path: ${OAUTH_FAILURE_REDIRECT_PATH:/login/error}
+
+cors:
+  # 콤마로 구분해 여러 origin 지정 가능 (예: http://localhost:3000,http://localhost:3001)
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001,https://dev-admin.chup.site,https://dev-client.chup.site}
+
 sdk:
   logging:
     enabled: true
     not-logging-urls:
       - "/v3/api-docs/**"
       - "/swagger-ui/**"
+      - "/api/auth/datagsm/callback"
 
   response:
     enabled: true
@@ -15,6 +88,8 @@ sdk:
       - "/v3/api-docs/**"
       - "/v3/api-docs"
       - "/swagger-ui/**"
+      - "/api/auth/datagsm/login"
+      - "/api/auth/datagsm/callback"
 
   exception:
     enabled: true
@@ -27,4 +102,4 @@ sdk:
     version: "v1"
     group: "API"
     paths-to-match:
-      - "/v1/**"
+      - "/api/**"

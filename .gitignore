@@ -35,3 +35,17 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Secrets ###
+.env
+.env.*
+!.env.example
+!**/.env.example
+!.env.prod.example
+!**/.env.prod.example
+
+### Local file storage ###
+/storage/
+
+### TLS certs (수동 발급, git에 커밋하지 않고 VM에 직접 배치) ###
+/deploy/certs/

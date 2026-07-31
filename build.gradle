@@ -50,8 +50,24 @@ dependencies {
 
     /* sdk */
     implementation("com.github.themoment-team:the-sdk:1.5")
+
+    /* DataGSM OAuth SDK */
+    implementation("com.github.themoment-team:datagsm-oauth-sdk-java:1.5.0")
+
+    /* Resend (이메일 발송) */
+    implementation("com.resend:resend-java:4.13.0")
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // 빌드 환경(OS/로케일)의 기본 인코딩에 의존하면 소스 코드 속 한글 문자열 리터럴이
+    // 컴파일 시점에 깨질 수 있어 명시적으로 UTF-8을 강제한다
+    options.encoding = 'UTF-8'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.named('jar') {
+    enabled = false
 }

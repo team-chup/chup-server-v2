@@ -1,0 +1,14 @@
+.git
+.gradle
+.idea
+*.iml
+out
+build/reports
+build/tmp
+build/classes
+build/resources
+build/generated
+build/kotlin
+build/test-results
+.claude
+.agents
