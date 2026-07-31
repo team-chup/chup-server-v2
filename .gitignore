@@ -41,6 +41,8 @@ out/
 .env.*
 !.env.example
 !**/.env.example
+!.env.prod.example
+!**/.env.prod.example
 
 ### Local file storage ###
 /storage/
