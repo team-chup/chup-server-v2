@@ -90,6 +90,11 @@ sdk:
       - "/swagger-ui/**"
       - "/api/auth/datagsm/login"
       - "/api/auth/datagsm/callback"
+      # 파일 다운로드(ResponseEntity<Resource>) 응답은 CommonApiResponse로 감싸면
+      # 바이너리 바디가 깨져서 200에 빈 파일이 응답된다 (QA 중 발견).
+      - "/api/jobs/*/attachments/*"
+      - "/api/admin/applicants/*/resume"
+      - "/api/admin/applicants/zip"
 
   exception:
     enabled: true
