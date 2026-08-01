@@ -37,9 +37,6 @@ public class ApplicationJpaEntity {
     @JoinColumn(name = "job_position_id", nullable = false)
     private JobPositionJpaEntity jobPosition;
 
-    @Column(name = "resume_snapshot_url", nullable = false, length = 1000)
-    private String resumeSnapshotUrl;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     @Builder.Default

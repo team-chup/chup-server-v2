@@ -35,10 +35,10 @@ public class ApplicationController {
     private final QueryApplicantResumeService queryApplicantResumeService;
     private final QueryApplicantResumesZipService queryApplicantResumesZipService;
 
-    @Operation(summary = "지원하기", description = "채용 공고의 특정 포지션에, 등록된 이력서 중 하나(resumeId)를 선택해 지원합니다.")
+    @Operation(summary = "지원하기", description = "채용 공고의 특정 포지션에, 등록된 이력서 중 하나 이상(resumeIds)을 선택해 지원합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "지원 성공"),
-            @ApiResponse(responseCode = "400", description = "선택한 이력서를 찾을 수 없음"),
+            @ApiResponse(responseCode = "400", description = "이력서를 선택하지 않았거나 선택한 이력서를 찾을 수 없음"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "404", description = "사용자, 공고 또는 포지션을 찾을 수 없음"),
             @ApiResponse(responseCode = "409", description = "이미 지원한 공고")
@@ -46,7 +46,7 @@ public class ApplicationController {
     @PostMapping("/api/jobs/{jobId}/applications")
     public ApplicationResponse apply(@AuthenticationPrincipal OAuth2User user, @PathVariable Long jobId,
                                       @RequestBody ApplyRequest request) {
-        return applyJobService.execute(user, jobId, request.jobPositionId(), request.resumeId());
+        return applyJobService.execute(user, jobId, request.jobPositionId(), request.resumeIds());
     }
 
     @Operation(summary = "내 지원 현황 조회", description = "현재 로그인한 사용자의 지원 내역을 조회합니다.")
@@ -82,12 +82,12 @@ public class ApplicationController {
         return FileDownloadResponses.of(queryApplicantResumesZipService.execute(companyId));
     }
 
-    @Operation(summary = "지원자 이력서 다운로드", description = "특정 지원 건의 이력서 파일을 다운로드합니다.")
+    @Operation(summary = "지원자 이력서 다운로드", description = "특정 지원 건에 첨부된 이력서 파일(들)을 ZIP으로 다운로드합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "다운로드 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음"),
-            @ApiResponse(responseCode = "404", description = "지원 내역을 찾을 수 없음")
+            @ApiResponse(responseCode = "404", description = "지원 내역 또는 이력서를 찾을 수 없음")
     })
     @GetMapping("/api/admin/applicants/{applicationId}/resume")
     public ResponseEntity<Resource> downloadApplicantResume(@PathVariable Long applicationId) {
@@ -106,7 +106,7 @@ public class ApplicationController {
         return modifyApplicationResultService.execute(applicationId, request.status());
     }
 
-    private record ApplyRequest(Long jobPositionId, Long resumeId) {}
+    private record ApplyRequest(Long jobPositionId, List<Long> resumeIds) {}
 
     private record ResultRequest(ApplicationStatus status) {}
 }
