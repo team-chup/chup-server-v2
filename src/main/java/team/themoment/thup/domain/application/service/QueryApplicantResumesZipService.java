@@ -7,19 +7,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team.themoment.sdk.exception.ExpectedException;
 import team.themoment.thup.domain.application.entity.ApplicationJpaEntity;
+import team.themoment.thup.domain.application.entity.ApplicationResumeJpaEntity;
 import team.themoment.thup.domain.application.repository.ApplicationRepository;
+import team.themoment.thup.domain.application.repository.ApplicationResumeRepository;
 import team.themoment.thup.domain.application.util.ApplicantResumeFileNameBuilder;
 import team.themoment.thup.global.storage.FileDownload;
 import team.themoment.thup.global.storage.FileStorageService;
+import team.themoment.thup.global.storage.ZipBuilder;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +27,7 @@ import java.util.zip.ZipOutputStream;
 public class QueryApplicantResumesZipService {
 
     private final ApplicationRepository applicationRepository;
+    private final ApplicationResumeRepository applicationResumeRepository;
     private final FileStorageService fileStorageService;
 
     public FileDownload execute(Long companyId) {
@@ -38,7 +39,7 @@ public class QueryApplicantResumesZipService {
             throw new ExpectedException("지원자가 없습니다.", HttpStatus.NOT_FOUND);
         }
 
-        byte[] zipBytes = buildZip(applications);
+        byte[] zipBytes = ZipBuilder.build(buildEntries(applications), fileStorageService);
         String zipFileName = companyId == null
                 ? "전체.zip"
                 : applications.get(0).getJobPosting().getCompanyName() + ".zip";
@@ -46,34 +47,26 @@ public class QueryApplicantResumesZipService {
         return new FileDownload(new ByteArrayResource(zipBytes), zipFileName);
     }
 
-    private byte[] buildZip(List<ApplicationJpaEntity> applications) {
-        Map<String, Integer> usedEntryNames = new HashMap<>();
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    private List<ZipBuilder.Entry> buildEntries(List<ApplicationJpaEntity> applications) {
+        List<Long> applicationIds = applications.stream().map(ApplicationJpaEntity::getId).toList();
+        Map<Long, List<ApplicationResumeJpaEntity>> resumesByApplicationId = applicationResumeRepository
+                .findAllByApplication_IdIn(applicationIds).stream()
+                .collect(Collectors.groupingBy(resume -> resume.getApplication().getId()));
 
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(buffer)) {
-            for (ApplicationJpaEntity application : applications) {
-                String entryName = uniqueEntryName(ApplicantResumeFileNameBuilder.build(application), usedEntryNames);
-                zipOutputStream.putNextEntry(new ZipEntry(entryName));
-                try (InputStream inputStream = fileStorageService.loadAsResource(application.getResumeSnapshotUrl()).getInputStream()) {
-                    inputStream.transferTo(zipOutputStream);
-                }
-                zipOutputStream.closeEntry();
+        Map<String, Integer> usedFolderNames = new HashMap<>();
+        List<ZipBuilder.Entry> entries = new ArrayList<>();
+
+        for (ApplicationJpaEntity application : applications) {
+            String folderName = ZipBuilder.uniqueName(ApplicantResumeFileNameBuilder.buildLabel(application), usedFolderNames);
+            List<ApplicationResumeJpaEntity> resumes = resumesByApplicationId.getOrDefault(application.getId(), List.of());
+
+            Map<String, Integer> usedFileNames = new HashMap<>();
+            for (ApplicationResumeJpaEntity resume : resumes) {
+                String fileName = ZipBuilder.uniqueName(resume.getResumeFileName(), usedFileNames);
+                entries.add(new ZipBuilder.Entry(folderName + "/" + fileName, resume.getResumeSnapshotUrl()));
             }
-        } catch (IOException e) {
-            throw new ExpectedException("ZIP 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return buffer.toByteArray();
-    }
-
-    private String uniqueEntryName(String fileName, Map<String, Integer> usedEntryNames) {
-        int count = usedEntryNames.merge(fileName, 1, Integer::sum);
-        if (count == 1) {
-            return fileName;
-        }
-        int dotIndex = fileName.lastIndexOf('.');
-        String base = dotIndex == -1 ? fileName : fileName.substring(0, dotIndex);
-        String extension = dotIndex == -1 ? "" : fileName.substring(dotIndex);
-        return "%s(%d)%s".formatted(base, count - 1, extension);
+        return entries;
     }
 }

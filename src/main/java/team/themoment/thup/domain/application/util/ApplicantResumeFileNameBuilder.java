@@ -7,12 +7,16 @@ public final class ApplicantResumeFileNameBuilder {
     private ApplicantResumeFileNameBuilder() {
     }
 
-    public static String build(ApplicationJpaEntity application) {
+    public static String buildLabel(ApplicationJpaEntity application) {
         String name = sanitize(application.getUser().getName());
         String studentId = sanitize(application.getUser().getStudentId());
         String position = sanitize(application.getJobPosition().getName());
 
-        return "%s_%s_%s.pdf".formatted(name, studentId, position);
+        return "%s_%s_%s".formatted(name, studentId, position);
+    }
+
+    public static String buildZipFileName(ApplicationJpaEntity application) {
+        return buildLabel(application) + ".zip";
     }
 
     private static String sanitize(String value) {
