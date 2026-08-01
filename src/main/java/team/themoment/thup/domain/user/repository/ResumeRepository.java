@@ -12,5 +12,7 @@ public interface ResumeRepository extends JpaRepository<ResumeJpaEntity, Long> {
 
     Optional<ResumeJpaEntity> findByIdAndUser_Id(Long id, Long userId);
 
+    List<ResumeJpaEntity> findAllByIdInAndUser_Id(List<Long> ids, Long userId);
+
     long countByUser_Id(Long userId);
 }

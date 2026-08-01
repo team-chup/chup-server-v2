@@ -54,18 +54,18 @@ public class UserController {
         return modifyUserPhoneNumberService.execute(user, request.phoneNumber());
     }
 
-    @Operation(summary = "이력서 등록", description = "현재 로그인한 사용자의 PDF 이력서를 한 번에 여러 개 등록합니다. 기존 등록 개수 + 이번 요청 개수가 3개를 넘으면 409를 반환합니다.")
+    @Operation(summary = "이력서 등록", description = "현재 로그인한 사용자의 PDF 이력서를 등록합니다. 최대 3개까지 등록할 수 있습니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "등록 성공"),
             @ApiResponse(responseCode = "400", description = "PDF 파일이 아님"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
-            @ApiResponse(responseCode = "409", description = "최대 3개 제한 초과"),
+            @ApiResponse(responseCode = "409", description = "이미 3개 등록됨"),
             @ApiResponse(responseCode = "413", description = "파일 용량 초과")
     })
     @PostMapping(value = "/me/resumes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public List<ResumeResponse> registerResume(@AuthenticationPrincipal OAuth2User user, @RequestParam("files") List<MultipartFile> files) {
-        return registerResumeService.execute(user, files);
+    public ResumeResponse registerResume(@AuthenticationPrincipal OAuth2User user, @RequestParam("file") MultipartFile file) {
+        return registerResumeService.execute(user, file);
     }
 
     @Operation(summary = "이력서 목록 조회", description = "현재 로그인한 사용자가 등록한 이력서 목록을 조회합니다.")

@@ -15,8 +15,6 @@ import team.themoment.thup.domain.user.repository.UserRepository;
 import team.themoment.thup.global.storage.FileStorageService;
 import team.themoment.thup.global.storage.StoredFile;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,38 +27,31 @@ public class RegisterResumeService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
-    public List<ResumeResponse> execute(OAuth2User user, List<MultipartFile> files) {
+    public ResumeResponse execute(OAuth2User user, MultipartFile file) {
         Long userId = ((Number) user.getAttribute("id")).longValue();
-
-        if (files == null || files.isEmpty()) {
-            throw new ExpectedException("이력서 파일이 필요합니다.", HttpStatus.BAD_REQUEST);
-        }
-        files.forEach(this::validate);
+        validate(file);
 
         // 동시 업로드 요청이 카운트 체크를 동시에 통과해 3개 제한을 넘기지 않도록,
         // 유저 row에 락을 건 뒤 그 안에서 카운트를 확인한다.
         UserJpaEntity foundUser = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new ExpectedException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
-        long existingCount = resumeRepository.countByUser_Id(userId);
-        if (existingCount + files.size() > MAX_RESUMES) {
+        if (resumeRepository.countByUser_Id(userId) >= MAX_RESUMES) {
             throw new ExpectedException("이력서는 최대 " + MAX_RESUMES + "개까지 등록할 수 있습니다.", HttpStatus.CONFLICT);
         }
 
-        return files.stream()
-                .map(file -> {
-                    StoredFile stored = fileStorageService.store(file, "resumes/" + userId);
-                    ResumeJpaEntity saved = resumeRepository.save(
-                            ResumeJpaEntity.builder()
-                                    .user(foundUser)
-                                    .fileName(stored.originalFileName())
-                                    .fileUrl(stored.storageKey())
-                                    .fileSize((int) stored.size())
-                                    .build()
-                    );
-                    return ResumeResponse.from(saved);
-                })
-                .toList();
+        StoredFile stored = fileStorageService.store(file, "resumes/" + userId);
+
+        ResumeJpaEntity saved = resumeRepository.save(
+                ResumeJpaEntity.builder()
+                        .user(foundUser)
+                        .fileName(stored.originalFileName())
+                        .fileUrl(stored.storageKey())
+                        .fileSize((int) stored.size())
+                        .build()
+        );
+
+        return ResumeResponse.from(saved);
     }
 
     private void validate(MultipartFile file) {
