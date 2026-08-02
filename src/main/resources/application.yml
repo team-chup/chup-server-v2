@@ -25,6 +25,9 @@ spring:
       database: 1
 
   session:
+    # Spring Session(Redis)이 세션을 관리하므로 server.servlet.session.timeout은 적용되지 않는다.
+    # 이 값이 실제 만료 시간이며, 없으면 spring-session 기본값인 30분으로 동작한다.
+    timeout: 3h
     redis:
       flush-mode: immediate
       save-mode: on-set-attribute
@@ -36,9 +39,6 @@ spring:
 
 server:
   port: 8080
-  servlet:
-    session:
-      timeout: 3h
   forward-headers-strategy: framework
 
 storage:
