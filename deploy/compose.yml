@@ -20,6 +20,10 @@ services:
       - STORAGE_BASE_DIR=/data/storage
       - RESEND_API_KEY=${RESEND_API_KEY}
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - DISCORD_ENV_LABEL=DEV
+      - DISCORD_JOB_WEBHOOK_URL=${DISCORD_JOB_WEBHOOK_URL}
+      - DISCORD_ERROR_WEBHOOK_URL=${DISCORD_ERROR_WEBHOOK_URL}
+      - DISCORD_CLIENT_JOBS_URL=https://dev-client.chup.site/jobs
     volumes:
       - storage_data:/data/storage
     depends_on:
