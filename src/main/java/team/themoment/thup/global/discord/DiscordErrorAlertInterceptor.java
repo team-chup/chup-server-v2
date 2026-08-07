@@ -1,5 +1,6 @@
 package team.themoment.thup.global.discord;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,12 @@ public class DiscordErrorAlertInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        // 에러 응답이 만들어지면 서블릿이 /error로 ERROR 디스패치를 한 번 더 돌리고, 그것도 핸들러에
+        // 매핑되어 있어 인터셉터가 두 번 실행된다. 원본 요청만 알린다.
+        if (request.getDispatcherType() != DispatcherType.REQUEST) {
+            return;
+        }
+
         // 예외가 여기까지 온 경우는 어떤 핸들러도 처리하지 못한 상태이며, 응답 상태는 아직 200일 수 있다
         int status = ex != null ? HttpStatus.INTERNAL_SERVER_ERROR.value() : response.getStatus();
         if (status < 400 || IGNORED_STATUSES.contains(status)) {
