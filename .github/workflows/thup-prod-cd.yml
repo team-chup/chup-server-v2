@@ -45,7 +45,7 @@ jobs:
           port: 24152
           username: ubuntu
           password: ${{ secrets.PROD_GSMSV_SSH_PASSWORD }}
-          envs: MYSQL_PASSWORD,REDIS_PASSWORD,DATAGSM_CLIENT_ID,DATAGSM_CLIENT_SECRET,RESEND_API_KEY,MAIL_FROM_ADDRESS
+          envs: MYSQL_PASSWORD,REDIS_PASSWORD,DATAGSM_CLIENT_ID,DATAGSM_CLIENT_SECRET,RESEND_API_KEY,MAIL_FROM_ADDRESS,DISCORD_JOB_WEBHOOK_URL,DISCORD_ERROR_WEBHOOK_URL
           script: |
             set -e
             cd /home/ubuntu/thup/deploy
@@ -59,6 +59,8 @@ jobs:
             DATAGSM_CLIENT_SECRET=$DATAGSM_CLIENT_SECRET
             RESEND_API_KEY=$RESEND_API_KEY
             MAIL_FROM_ADDRESS=$MAIL_FROM_ADDRESS
+            DISCORD_JOB_WEBHOOK_URL=$DISCORD_JOB_WEBHOOK_URL
+            DISCORD_ERROR_WEBHOOK_URL=$DISCORD_ERROR_WEBHOOK_URL
             ENVEOF
 
             docker compose --env-file .env up -d --build
@@ -78,3 +80,5 @@ jobs:
           DATAGSM_CLIENT_SECRET: ${{ secrets.PROD_DATAGSM_CLIENT_SECRET }}
           RESEND_API_KEY: ${{ secrets.PROD_RESEND_API_KEY }}
           MAIL_FROM_ADDRESS: ${{ secrets.PROD_MAIL_FROM_ADDRESS }}
+          DISCORD_JOB_WEBHOOK_URL: ${{ secrets.PROD_DISCORD_JOB_WEBHOOK_URL }}
+          DISCORD_ERROR_WEBHOOK_URL: ${{ secrets.PROD_DISCORD_ERROR_WEBHOOK_URL }}
