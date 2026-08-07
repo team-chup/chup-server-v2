@@ -48,6 +48,16 @@ mail:
   api-key: ${RESEND_API_KEY:}
   from-address: ${MAIL_FROM_ADDRESS:onboarding@resend.dev}
 
+discord:
+  # 알림 메시지에 붙는 환경 라벨(DEV/PROD). dev와 상용이 같은 채널을 쓰므로 이걸로 구분한다.
+  env-label: ${DISCORD_ENV_LABEL:LOCAL}
+  # 웹훅 URL이 비어 있으면(로컬 등) 알림 발송을 건너뛴다.
+  job-webhook-url: ${DISCORD_JOB_WEBHOOK_URL:}
+  error-webhook-url: ${DISCORD_ERROR_WEBHOOK_URL:}
+  client-jobs-url: ${DISCORD_CLIENT_JOBS_URL:https://client.chup.site/jobs}
+  # 같은 에러(상태코드+메서드+경로+예외)가 이 시간 안에 반복되면 한 번만 알린다.
+  error-cooldown: 5m
+
 session:
   cookie:
     # 로컬(http://localhost)은 Secure 쿠키를 거부하므로 기본값은 완화된 설정입니다.

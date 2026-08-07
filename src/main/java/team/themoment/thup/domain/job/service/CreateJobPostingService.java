@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import team.themoment.sdk.exception.ExpectedException;
+import team.themoment.thup.domain.job.discord.JobPostingDiscordNotifier;
+import team.themoment.thup.domain.job.discord.JobPostingNotification;
 import team.themoment.thup.domain.job.dto.JobPostingDetailResponse;
 import team.themoment.thup.domain.job.entity.AttachmentJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
@@ -39,6 +41,7 @@ public class CreateJobPostingService {
     private final AttachmentRepository attachmentRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final JobPostingDiscordNotifier jobPostingDiscordNotifier;
 
     public JobPostingDetailResponse execute(OAuth2User admin, String companyName, String description,
                                              EmploymentType employmentType, LocalDate recruitStart, LocalDate recruitEnd,
@@ -70,6 +73,16 @@ public class CreateJobPostingService {
                 .toList();
 
         List<AttachmentJpaEntity> savedAttachments = saveAttachments(saved, attachments);
+
+        jobPostingDiscordNotifier.notifyCreated(new JobPostingNotification(
+                saved.getCompanyName(),
+                saved.getDescription(),
+                saved.getEmploymentType(),
+                savedPositions.stream().map(JobPositionJpaEntity::getName).toList(),
+                saved.getRecruitStart(),
+                saved.getRecruitEnd(),
+                createdBy.getName()
+        ));
 
         return JobPostingDetailResponse.of(saved, savedPositions, savedAttachments);
     }
