@@ -41,7 +41,7 @@ public class ApplicationController {
             @ApiResponse(responseCode = "400", description = "이력서를 선택하지 않았거나 선택한 이력서를 찾을 수 없음"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "404", description = "사용자, 공고 또는 포지션을 찾을 수 없음"),
-            @ApiResponse(responseCode = "409", description = "이미 지원한 공고")
+            @ApiResponse(responseCode = "409", description = "이미 지원한 공고이거나 마감된 공고")
     })
     @PostMapping("/api/jobs/{jobId}/applications")
     public ApplicationResponse apply(@AuthenticationPrincipal OAuth2User user, @PathVariable Long jobId,
