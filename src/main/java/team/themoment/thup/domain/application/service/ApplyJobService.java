@@ -14,6 +14,7 @@ import team.themoment.thup.domain.application.repository.ApplicationRepository;
 import team.themoment.thup.domain.application.repository.ApplicationResumeRepository;
 import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
+import team.themoment.thup.domain.job.entity.constant.JobPostingStatus;
 import team.themoment.thup.domain.job.repository.JobPositionRepository;
 import team.themoment.thup.domain.job.repository.JobPostingRepository;
 import team.themoment.thup.domain.user.entity.ResumeJpaEntity;
@@ -21,7 +22,9 @@ import team.themoment.thup.domain.user.entity.UserJpaEntity;
 import team.themoment.thup.domain.user.repository.ResumeRepository;
 import team.themoment.thup.domain.user.repository.UserRepository;
 import team.themoment.thup.global.mail.MailService;
+import team.themoment.thup.global.time.AppTimeZone;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -52,6 +55,13 @@ public class ApplyJobService {
                 .orElseThrow(() -> new ExpectedException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         JobPostingJpaEntity jobPosting = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ExpectedException("공고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+        // 자동 마감 배치가 아직 돌지 않았거나 실패한 경우에도 막을 수 있도록 상태와 모집 마감일을 함께 확인한다
+        if (jobPosting.getStatus() == JobPostingStatus.CLOSED
+                || jobPosting.getRecruitEnd().isBefore(LocalDate.now(AppTimeZone.KST))) {
+            throw new ExpectedException("마감된 공고입니다.", HttpStatus.CONFLICT);
+        }
+
         JobPositionJpaEntity jobPosition = jobPositionRepository.findById(jobPositionId)
                 .orElseThrow(() -> new ExpectedException("포지션을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
