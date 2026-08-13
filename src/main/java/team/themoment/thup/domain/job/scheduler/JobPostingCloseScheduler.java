@@ -7,9 +7,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import team.themoment.thup.domain.job.service.CloseExpiredJobPostingsService;
+import team.themoment.thup.global.time.AppTimeZone;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 
 /**
@@ -23,12 +23,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JobPostingCloseScheduler {
 
-    private static final String KST_ZONE = "Asia/Seoul";
-    private static final ZoneId KST = ZoneId.of(KST_ZONE);
-
     private final CloseExpiredJobPostingsService closeExpiredJobPostingsService;
 
-    @Scheduled(cron = "0 0 0 * * *", zone = KST_ZONE)
+    @Scheduled(cron = "0 0 0 * * *", zone = AppTimeZone.KST_ID)
     public void closeExpiredJobPostings() {
         closeExpired();
     }
@@ -42,7 +39,7 @@ public class JobPostingCloseScheduler {
     }
 
     private void closeExpired() {
-        LocalDate today = LocalDate.now(KST);
+        LocalDate today = LocalDate.now(AppTimeZone.KST);
         List<String> closedCompanyNames = closeExpiredJobPostingsService.execute(today);
         if (!closedCompanyNames.isEmpty()) {
             log.info("모집 기간이 지난 공고 {}건을 마감 처리했습니다. (기준일: {}, 회사: {})",
