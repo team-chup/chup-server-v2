@@ -68,11 +68,17 @@ public class DataGsmOAuthCallbackService {
     private UserJpaEntity getOrCreateUser(UserInfo userInfo) {
         Student student = userInfo.getStudent();
         return userRepository.findByEmail(userInfo.getEmail())
+                .map(existing -> {
+                    // 진급 등으로 학년이 바뀔 수 있어 로그인할 때마다 최신 값으로 갱신한다
+                    existing.updateGrade(student.getGrade());
+                    return existing;
+                })
                 .orElseGet(() -> userRepository.save(
                         UserJpaEntity.builder()
                                 .email(userInfo.getEmail())
                                 .name(student.getName())
                                 .studentId(String.valueOf(student.getStudentNumber()))
+                                .grade(student.getGrade())
                                 .role(Role.STUDENT)
                                 .approved(true)
                                 .build()
