@@ -27,12 +27,13 @@ public interface ApplicationRepository extends JpaRepository<ApplicationJpaEntit
     @Query("select a.jobPosting.id, count(a) from ApplicationJpaEntity a where a.jobPosting.id in :jobPostingIds group by a.jobPosting.id")
     List<Object[]> countGroupedByJobPostingIdIn(List<Long> jobPostingIds);
 
-    @Query("select a from ApplicationJpaEntity a join fetch a.jobPosting join fetch a.jobPosition where a.user.id = :userId")
+    @Query("select a from ApplicationJpaEntity a left join fetch a.jobPosting left join fetch a.jobPosition where a.user.id = :userId")
     List<ApplicationJpaEntity> findAllWithJobByUser_Id(Long userId);
 
-    @Query("select a from ApplicationJpaEntity a join fetch a.user join fetch a.jobPosting join fetch a.jobPosition")
+    @Query("select a from ApplicationJpaEntity a join fetch a.user left join fetch a.jobPosting left join fetch a.jobPosition")
     List<ApplicationJpaEntity> findAllWithDetails();
 
+    // 외부 지원 건은 jobPosting이 null이라 이 조건에서 이미 배제되므로 INNER JOIN FETCH 그대로 둔다.
     @Query("select a from ApplicationJpaEntity a join fetch a.user join fetch a.jobPosting join fetch a.jobPosition where a.jobPosting.id = :jobPostingId")
     List<ApplicationJpaEntity> findAllWithDetailsByJobPosting_Id(Long jobPostingId);
 }
