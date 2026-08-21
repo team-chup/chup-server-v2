@@ -1,15 +1,23 @@
 package team.themoment.thup.domain.transportsubsidy.repository;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import team.themoment.thup.domain.transportsubsidy.entity.TransportSubsidyApplicationJpaEntity;
 import team.themoment.thup.domain.transportsubsidy.entity.constant.TransportSubsidyStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TransportSubsidyApplicationRepository extends JpaRepository<TransportSubsidyApplicationJpaEntity, Long> {
 
     long countByUser_IdAndStatus(Long userId, TransportSubsidyStatus status);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from TransportSubsidyApplicationJpaEntity a where a.id = :id")
+    Optional<TransportSubsidyApplicationJpaEntity> findByIdForUpdate(@Param("id") Long id);
 
     List<TransportSubsidyApplicationJpaEntity> findAllByUser_IdOrderByAppliedAtDesc(Long userId);
 
