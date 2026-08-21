@@ -1,6 +1,7 @@
 package team.themoment.thup.domain.application.dto;
 
 import team.themoment.thup.domain.application.entity.ApplicationJpaEntity;
+import team.themoment.thup.domain.application.entity.constant.ApplicationSource;
 import team.themoment.thup.domain.application.entity.constant.ApplicationStatus;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
 
@@ -14,6 +15,9 @@ public record AdminApplicantResponse(
         String phoneNumber,
         String companyName,
         String positionName,
+        ApplicationSource applicationSource,
+        String sourcePlatform,
+        boolean isExternal,
         ApplicationStatus status,
         LocalDateTime appliedAt
 ) {
@@ -25,8 +29,11 @@ public record AdminApplicantResponse(
                 user.getStudentId(),
                 user.getEmail(),
                 user.getPhoneNumber(),
-                application.getJobPosting().getCompanyName(),
-                application.getJobPosition().getName(),
+                application.getEffectiveCompanyName(),
+                application.getEffectivePositionName(),
+                application.getApplicationSource(),
+                application.getSourcePlatform(),
+                application.isExternal(),
                 application.getStatus(),
                 application.getAppliedAt()
         );

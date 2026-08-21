@@ -48,7 +48,12 @@ public class QueryApplicantResumesZipService {
     }
 
     private List<ZipBuilder.Entry> buildEntries(List<ApplicationJpaEntity> applications) {
-        List<Long> applicationIds = applications.stream().map(ApplicationJpaEntity::getId).toList();
+        // 외부 지원 건은 이력서 업로드 경로가 없고 jobPosition도 없어 파일명 라벨을 만들 수 없으므로 제외한다.
+        List<ApplicationJpaEntity> officialApplications = applications.stream()
+                .filter(application -> !application.isExternal())
+                .toList();
+
+        List<Long> applicationIds = officialApplications.stream().map(ApplicationJpaEntity::getId).toList();
         Map<Long, List<ApplicationResumeJpaEntity>> resumesByApplicationId = applicationResumeRepository
                 .findAllByApplication_IdIn(applicationIds).stream()
                 .collect(Collectors.groupingBy(resume -> resume.getApplication().getId()));
@@ -56,7 +61,7 @@ public class QueryApplicantResumesZipService {
         Map<String, Integer> usedFolderNames = new HashMap<>();
         List<ZipBuilder.Entry> entries = new ArrayList<>();
 
-        for (ApplicationJpaEntity application : applications) {
+        for (ApplicationJpaEntity application : officialApplications) {
             String folderName = ZipBuilder.uniqueName(ApplicantResumeFileNameBuilder.buildLabel(application), usedFolderNames);
             List<ApplicationResumeJpaEntity> resumes = resumesByApplicationId.getOrDefault(application.getId(), List.of());
 
