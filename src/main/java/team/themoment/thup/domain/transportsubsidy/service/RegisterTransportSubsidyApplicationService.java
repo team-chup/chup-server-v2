@@ -86,7 +86,7 @@ public class RegisterTransportSubsidyApplicationService {
             if (file.isEmpty()) {
                 throw new ExpectedException("빈 파일은 첨부할 수 없습니다.", HttpStatus.BAD_REQUEST);
             }
-            if (!ALLOWED_CONTENT_TYPES.contains(file.getContentType())) {
+            if (file.getContentType() == null || !ALLOWED_CONTENT_TYPES.contains(file.getContentType())) {
                 throw new ExpectedException("이미지(jpg/png) 또는 PDF 파일만 첨부할 수 있습니다.", HttpStatus.BAD_REQUEST);
             }
             if (file.getSize() > MAX_FILE_SIZE_BYTES) {
