@@ -61,6 +61,11 @@ public class UserJpaEntity {
         this.approved = false;
     }
 
+    public void switchRole(Role role) {
+        this.role = role;
+        this.approved = true;
+    }
+
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
