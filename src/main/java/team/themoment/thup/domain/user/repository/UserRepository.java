@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<UserJpaEntity, Long> {
 
     List<UserJpaEntity> findAllByRoleAndApprovedFalseOrderByCreatedAtAsc(Role role);
 
+    List<UserJpaEntity> findAllByRoleAndGrade(Role role, Integer grade);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from UserJpaEntity u where u.id = :id")
     Optional<UserJpaEntity> findByIdForUpdate(@Param("id") Long id);
