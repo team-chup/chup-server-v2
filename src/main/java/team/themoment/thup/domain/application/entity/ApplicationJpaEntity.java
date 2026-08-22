@@ -3,6 +3,7 @@ package team.themoment.thup.domain.application.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import team.themoment.thup.domain.application.entity.constant.ApplicationSource;
 import team.themoment.thup.domain.application.entity.constant.ApplicationStatus;
 import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
 import team.themoment.thup.domain.job.entity.JobPostingJpaEntity;
@@ -30,12 +31,23 @@ public class ApplicationJpaEntity {
     private UserJpaEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_posting_id", nullable = false)
+    @JoinColumn(name = "job_posting_id")
     private JobPostingJpaEntity jobPosting;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_position_id", nullable = false)
+    @JoinColumn(name = "job_position_id")
     private JobPositionJpaEntity jobPosition;
+
+    @Column(name = "company_name", length = 100)
+    private String companyName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "application_source", nullable = false, columnDefinition = "VARCHAR(20) NOT NULL DEFAULT 'OFFICIAL'")
+    @Builder.Default
+    private ApplicationSource applicationSource = ApplicationSource.OFFICIAL;
+
+    @Column(name = "source_platform", length = 100)
+    private String sourcePlatform; // 외부 지원 건의 플랫폼명 (잡코리아, 원티드 등) 자유 입력
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -52,5 +64,17 @@ public class ApplicationJpaEntity {
     public void updateStatus(ApplicationStatus status) {
         this.status = status;
         this.resultUpdatedAt = LocalDateTime.now();
+    }
+
+    public String getEffectiveCompanyName() {
+        return jobPosting != null ? jobPosting.getCompanyName() : companyName;
+    }
+
+    public String getEffectivePositionName() {
+        return jobPosition != null ? jobPosition.getName() : null;
+    }
+
+    public boolean isExternal() {
+        return applicationSource != ApplicationSource.OFFICIAL;
     }
 }

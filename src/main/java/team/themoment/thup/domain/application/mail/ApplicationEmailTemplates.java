@@ -30,6 +30,11 @@ public final class ApplicationEmailTemplates {
     }
 
     private static String resultLabel(ApplicationStatus status) {
-        return status == ApplicationStatus.PASSED ? "서류 합격" : "서류 불합격";
+        return switch (status) {
+            case APPLIED -> "지원 접수";
+            case INTERVIEW_SCHEDULED -> "면접 예정";
+            case PASSED -> "최종 합격";
+            case FAILED -> "면접 탈락";
+        };
     }
 }
