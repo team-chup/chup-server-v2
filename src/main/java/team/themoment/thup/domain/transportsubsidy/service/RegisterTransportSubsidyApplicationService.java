@@ -13,6 +13,7 @@ import team.themoment.thup.domain.transportsubsidy.entity.TransportSubsidyEviden
 import team.themoment.thup.domain.transportsubsidy.repository.TransportSubsidyApplicationRepository;
 import team.themoment.thup.domain.transportsubsidy.repository.TransportSubsidyEvidenceRepository;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
+import team.themoment.thup.domain.user.entity.constant.Role;
 import team.themoment.thup.domain.user.repository.UserRepository;
 import team.themoment.thup.global.storage.FileStorageService;
 import team.themoment.thup.global.storage.StoredFile;
@@ -49,6 +50,9 @@ public class RegisterTransportSubsidyApplicationService {
 
         UserJpaEntity foundUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ExpectedException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        if (foundUser.getRole() != Role.STUDENT) {
+            throw new ExpectedException("학생만 교통비 지원을 신청할 수 있습니다.", HttpStatus.BAD_REQUEST);
+        }
 
         TransportSubsidyApplicationJpaEntity application = applicationRepository.save(
                 TransportSubsidyApplicationJpaEntity.builder()

@@ -43,8 +43,9 @@ public class TransportSubsidyController {
     @Operation(summary = "면접 교통비 지원 신청", description = "면접 회사명, 일시와 증빙 서류(영수증, 교통편 예약 화면 등)를 첨부해 교통비 지원을 신청합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "신청 성공"),
-            @ApiResponse(responseCode = "400", description = "필수 값 누락 또는 잘못된 증빙 파일"),
+            @ApiResponse(responseCode = "400", description = "필수 값 누락, 잘못된 증빙 파일 또는 학생이 아닌 사용자"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음"),
             @ApiResponse(responseCode = "413", description = "파일 용량 초과")
     })
     @PostMapping(value = "/api/transport-subsidies", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
