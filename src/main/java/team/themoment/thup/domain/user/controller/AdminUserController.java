@@ -11,12 +11,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import team.themoment.thup.domain.user.dto.PendingAdminResDto;
+import team.themoment.thup.domain.user.dto.UserSearchResDto;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
+import team.themoment.thup.domain.user.entity.constant.Role;
 import team.themoment.thup.domain.user.service.ApproveAdminService;
 import team.themoment.thup.domain.user.service.PromoteToAdminService;
 import team.themoment.thup.domain.user.service.QueryPendingAdminsService;
+import team.themoment.thup.domain.user.service.QueryUsersService;
 
 import java.util.List;
 
@@ -29,6 +33,19 @@ public class AdminUserController {
     private final QueryPendingAdminsService queryPendingAdminsService;
     private final PromoteToAdminService promoteToAdminService;
     private final ApproveAdminService approveAdminService;
+    private final QueryUsersService queryUsersService;
+
+    @Operation(summary = "사용자 검색", description = "역할(role)과 이름/학번 검색어(q)로 사용자를 검색합니다. 파라미터를 생략하면 해당 조건 없이 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "403", description = "권한 없음")
+    })
+    @GetMapping
+    public List<UserSearchResDto> searchUsers(@RequestParam(required = false) Role role,
+                                               @RequestParam(required = false) String q) {
+        return queryUsersService.execute(role, q);
+    }
 
     @Operation(summary = "관리자 승인 대기 목록", description = "승인 대기 중인 관리자 계정 목록을 조회합니다.")
     @ApiResponses({

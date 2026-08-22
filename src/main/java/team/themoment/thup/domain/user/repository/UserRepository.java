@@ -19,6 +19,14 @@ public interface UserRepository extends JpaRepository<UserJpaEntity, Long> {
 
     List<UserJpaEntity> findAllByRoleAndGrade(Role role, Integer grade);
 
+    @Query("select u from UserJpaEntity u " +
+            "where (:role is null or u.role = :role) " +
+            "and (:keyword is null or :keyword = '' " +
+            "     or lower(u.name) like lower(concat('%', :keyword, '%')) " +
+            "     or u.studentId like concat('%', :keyword, '%')) " +
+            "order by u.name asc")
+    List<UserJpaEntity> searchByRoleAndKeyword(@Param("role") Role role, @Param("keyword") String keyword);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from UserJpaEntity u where u.id = :id")
     Optional<UserJpaEntity> findByIdForUpdate(@Param("id") Long id);
