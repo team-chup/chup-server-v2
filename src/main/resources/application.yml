@@ -44,6 +44,10 @@ server:
 storage:
   base-dir: ${STORAGE_BASE_DIR:./storage}
 
+dev-tools:
+  # 개발 환경 전용 유틸리티(역할 강제 전환 등) 노출 여부. 상용에는 절대 true로 두지 않는다.
+  enabled: ${DEV_TOOLS_ENABLED:false}
+
 mail:
   api-key: ${RESEND_API_KEY:}
   from-address: ${MAIL_FROM_ADDRESS:onboarding@resend.dev}
