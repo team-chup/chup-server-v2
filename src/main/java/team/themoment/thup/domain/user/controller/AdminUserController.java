@@ -38,7 +38,7 @@ public class AdminUserController {
     private final QueryUsersService queryUsersService;
     private final SwitchUserRoleService switchUserRoleService;
 
-    @Operation(summary = "사용자 검색", description = "역할(role)과 이름/학번 검색어(q)로 사용자를 검색합니다. 파라미터를 생략하면 해당 조건 없이 조회합니다.")
+    @Operation(summary = "사용자 검색", description = "역할(role)과 이름 검색어(q)로 사용자를 검색합니다. 파라미터를 생략하면 해당 조건 없이 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
