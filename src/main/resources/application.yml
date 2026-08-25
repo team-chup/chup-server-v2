@@ -109,6 +109,7 @@ sdk:
       - "/api/jobs/*/attachments/*"
       - "/api/admin/applicants/*/resume"
       - "/api/admin/applicants/zip"
+      - "/api/admin/transport-subsidies/*/evidence"
 
   exception:
     enabled: true
