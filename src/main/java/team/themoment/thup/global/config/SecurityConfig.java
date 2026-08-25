@@ -3,6 +3,7 @@ package team.themoment.thup.global.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -44,6 +45,9 @@ public class SecurityConfig {
                         .securityContextRepository(securityContextRepository())
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // 개발용 역할 전환 API: ROLE_ADMIN이 없는 계정도 스스로 전환할 수 있어야 하므로 인증만 요구.
+                        // 실제 노출 여부는 DevToolsProperties.enabled()(prod에서는 항상 false)가 통제한다.
+                        .requestMatchers(HttpMethod.PATCH, "/api/admin/users/*/dev-role").authenticated()
                         .requestMatchers("/api/admin/**").hasAuthority(Role.ADMIN.getAuthority())
                         .requestMatchers(PUBLIC_PATHS).permitAll()
                         .anyRequest().authenticated()
