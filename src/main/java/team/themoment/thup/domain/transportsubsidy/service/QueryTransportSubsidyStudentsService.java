@@ -12,7 +12,9 @@ import team.themoment.thup.domain.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -25,12 +27,24 @@ public class QueryTransportSubsidyStudentsService {
     private final TransportSubsidyApplicationRepository applicationRepository;
 
     public List<TransportSubsidyStudentSummaryResponse> execute() {
-        List<UserJpaEntity> students = userRepository.findAllByRoleAndGrade(Role.STUDENT, TARGET_GRADE);
+        List<UserJpaEntity> gradeThreeStudents = userRepository.findAllByRoleAndGrade(Role.STUDENT, TARGET_GRADE);
 
         Map<Long, Long> approvedCountByUserId = toCountMap(
                 applicationRepository.countGroupedByUserIdAndStatus(TransportSubsidyStatus.APPROVED)
         );
         Map<Long, Long> totalCountByUserId = toCountMap(applicationRepository.countGroupedByUserId());
+
+        // 신청 이후 역할이 바뀐(예: 관리자로 승격된) 유저도 신청 이력이 있으면 계속 노출되어야 하므로,
+        // 3학년 재학생 목록에 신청 이력이 있는 유저를 role/grade와 무관하게 합쳐서 보여준다.
+        Set<Long> gradeThreeStudentIds = gradeThreeStudents.stream().map(UserJpaEntity::getId).collect(Collectors.toSet());
+        List<Long> applicantsOutsideGradeThree = totalCountByUserId.keySet().stream()
+                .filter(userId -> !gradeThreeStudentIds.contains(userId))
+                .toList();
+        List<UserJpaEntity> otherApplicants = applicantsOutsideGradeThree.isEmpty()
+                ? List.of()
+                : userRepository.findAllById(applicantsOutsideGradeThree);
+
+        List<UserJpaEntity> students = Stream.concat(gradeThreeStudents.stream(), otherApplicants.stream()).toList();
 
         return students.stream()
                 .map(student -> new TransportSubsidyStudentSummaryResponse(
