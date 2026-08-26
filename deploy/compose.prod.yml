@@ -13,7 +13,7 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - DATAGSM_CLIENT_ID=${DATAGSM_CLIENT_ID}
       - DATAGSM_CLIENT_SECRET=${DATAGSM_CLIENT_SECRET}
-      - DATAGSM_REDIRECT_URI=https://api.chup.site:34046/api/auth/datagsm/callback
+      - DATAGSM_REDIRECT_URI=https://api.chup.site:31869/api/auth/datagsm/callback
       - SESSION_COOKIE_SECURE=true
       - SESSION_COOKIE_SAME_SITE=None
       - SESSION_COOKIE_DOMAIN=chup.site
