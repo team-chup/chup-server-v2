@@ -27,6 +27,9 @@ public class UserJpaEntity {
     @Column(name = "student_id", length = 20)
     private String studentId;
 
+    @Column(name = "grade")
+    private Integer grade;
+
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
@@ -58,7 +61,16 @@ public class UserJpaEntity {
         this.approved = false;
     }
 
+    public void switchRole(Role role) {
+        this.role = role;
+        this.approved = true;
+    }
+
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public void updateGrade(Integer grade) {
+        this.grade = grade;
     }
 }

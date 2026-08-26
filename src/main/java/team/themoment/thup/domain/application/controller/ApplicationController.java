@@ -19,6 +19,7 @@ import team.themoment.thup.domain.application.service.QueryApplicantResumeServic
 import team.themoment.thup.domain.application.service.QueryApplicantResumesZipService;
 import team.themoment.thup.domain.application.service.QueryApplicantsService;
 import team.themoment.thup.domain.application.service.QueryMyApplicationsService;
+import team.themoment.thup.domain.application.service.RegisterManualApplicantService;
 import team.themoment.thup.global.storage.FileDownloadResponses;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class ApplicationController {
     private final ModifyApplicationResultService modifyApplicationResultService;
     private final QueryApplicantResumeService queryApplicantResumeService;
     private final QueryApplicantResumesZipService queryApplicantResumesZipService;
+    private final RegisterManualApplicantService registerManualApplicantService;
 
     @Operation(summary = "지원하기", description = "채용 공고의 특정 포지션에, 등록된 이력서 중 하나 이상(resumeIds)을 선택해 지원합니다.")
     @ApiResponses({
@@ -70,6 +72,21 @@ public class ApplicationController {
         return queryApplicantsService.execute(jobPostingId);
     }
 
+    @Operation(summary = "지원자 수동 등록", description = "잡코리아/원티드 등 외부 플랫폼을 통해 지원한 학생의 지원 현황을 관리자가 직접 등록합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "등록 성공"),
+            @ApiResponse(responseCode = "400", description = "필수 값 누락 또는 잘못된 지원 경로"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "학생을 찾을 수 없음")
+    })
+    @PostMapping("/api/admin/applicants")
+    public AdminApplicantResponse registerManualApplicant(@RequestBody ManualApplicantRequest request) {
+        return registerManualApplicantService.execute(
+                request.userId(), request.companyName(), request.sourcePlatform(), request.status()
+        );
+    }
+
     @Operation(summary = "지원자 이력서 ZIP 다운로드", description = "전체 또는 특정 공고(companyId=공고 ID) 지원자의 이력서를 ZIP으로 다운로드합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "다운로드 성공"),
@@ -94,7 +111,7 @@ public class ApplicationController {
         return FileDownloadResponses.of(queryApplicantResumeService.execute(applicationId));
     }
 
-    @Operation(summary = "지원 결과 처리", description = "지원 건의 서류 합격/불합격 결과를 처리합니다.")
+    @Operation(summary = "지원 결과 처리", description = "지원 건의 상태(면접 예정/최종 합격/면접 탈락 등)를 변경합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "처리 성공"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
@@ -109,4 +126,11 @@ public class ApplicationController {
     private record ApplyRequest(Long jobPositionId, List<Long> resumeIds) {}
 
     private record ResultRequest(ApplicationStatus status) {}
+
+    private record ManualApplicantRequest(
+            Long userId,
+            String companyName,
+            String sourcePlatform,
+            ApplicationStatus status
+    ) {}
 }
