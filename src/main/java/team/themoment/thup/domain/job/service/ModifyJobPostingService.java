@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class ModifyJobPostingService {
 
     private static final int MAX_ATTACHMENTS = 5;
-    private static final long MAX_ATTACHMENT_SIZE_BYTES = 10L * 1024 * 1024;
+    private static final long MAX_ATTACHMENT_SIZE_BYTES = 20L * 1024 * 1024;
 
     private final JobPostingRepository jobPostingRepository;
     private final JobPositionRepository jobPositionRepository;

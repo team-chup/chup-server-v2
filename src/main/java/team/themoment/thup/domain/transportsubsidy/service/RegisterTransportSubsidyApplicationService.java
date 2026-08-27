@@ -28,7 +28,7 @@ import java.util.Set;
 public class RegisterTransportSubsidyApplicationService {
 
     private static final int MAX_EVIDENCE_FILES = 5;
-    private static final long MAX_FILE_SIZE_BYTES = 10L * 1024 * 1024;
+    private static final long MAX_FILE_SIZE_BYTES = 20L * 1024 * 1024;
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "application/pdf");
 
     private final TransportSubsidyApplicationRepository applicationRepository;
