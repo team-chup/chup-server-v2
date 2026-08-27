@@ -21,7 +21,7 @@ import team.themoment.thup.global.storage.StoredFile;
 public class RegisterResumeService {
 
     private static final int MAX_RESUMES = 3;
-    private static final long MAX_RESUME_SIZE_BYTES = 10L * 1024 * 1024;
+    private static final long MAX_RESUME_SIZE_BYTES = 20L * 1024 * 1024;
 
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
