@@ -20,6 +20,7 @@ import team.themoment.thup.domain.application.service.QueryApplicantResumesZipSe
 import team.themoment.thup.domain.application.service.QueryApplicantsService;
 import team.themoment.thup.domain.application.service.QueryMyApplicationsService;
 import team.themoment.thup.domain.application.service.RegisterManualApplicantService;
+import team.themoment.thup.domain.application.service.RegisterMyExternalApplicationService;
 import team.themoment.thup.global.storage.FileDownloadResponses;
 
 import java.util.List;
@@ -36,6 +37,7 @@ public class ApplicationController {
     private final QueryApplicantResumeService queryApplicantResumeService;
     private final QueryApplicantResumesZipService queryApplicantResumesZipService;
     private final RegisterManualApplicantService registerManualApplicantService;
+    private final RegisterMyExternalApplicationService registerMyExternalApplicationService;
 
     @Operation(summary = "지원하기", description = "채용 공고의 특정 포지션에, 등록된 이력서 중 하나 이상(resumeIds)을 선택해 지원합니다.")
     @ApiResponses({
@@ -59,6 +61,19 @@ public class ApplicationController {
     @GetMapping("/api/applications")
     public List<ApplicationResponse> queryMyApplications(@AuthenticationPrincipal OAuth2User user) {
         return queryMyApplicationsService.execute(user);
+    }
+
+    @Operation(summary = "외부 지원 내역 등록", description = "잡코리아/원티드 등 사내 공식 공고가 아닌 외부 플랫폼에 지원한 내역을 학생 본인이 직접 등록합니다. 초기 상태는 지원 접수(APPLIED)로 고정되며, 이후 상태 변경은 관리자가 처리합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "등록 성공"),
+            @ApiResponse(responseCode = "400", description = "필수 값 누락 또는 학생이 아닌 사용자"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    @PostMapping("/api/applications/external")
+    public ApplicationResponse registerExternalApplication(@AuthenticationPrincipal OAuth2User user,
+                                                             @RequestBody ExternalApplicationRequest request) {
+        return registerMyExternalApplicationService.execute(user, request.companyName(), request.sourcePlatform());
     }
 
     @Operation(summary = "지원자 목록 조회", description = "전체 또는 특정 공고(jobPostingId=공고 ID)의 지원자 목록을 조회합니다.")
@@ -124,6 +139,8 @@ public class ApplicationController {
     }
 
     private record ApplyRequest(Long jobPositionId, List<Long> resumeIds) {}
+
+    private record ExternalApplicationRequest(String companyName, String sourcePlatform) {}
 
     private record ResultRequest(ApplicationStatus status) {}
 
