@@ -100,14 +100,14 @@ public class TransportSubsidyController {
         return FileDownloadResponses.of(queryTransportSubsidyEvidenceService.execute(applicationId));
     }
 
-    @Operation(summary = "면접 교통비 지원 승인/거절", description = "학생의 교통비 지원 신청을 승인 또는 거절합니다. 승인 시 해당 학생의 누적 승인 횟수가 1 증가하며, 이미 2회 승인된 경우 추가 승인은 거부됩니다.")
+    @Operation(summary = "면접 교통비 지원 승인/거절", description = "학생의 교통비 지원 신청을 승인 또는 거절합니다. 승인 횟수 상한은 없으며(잔여 예산 범위 내 선생님 판단으로 계속 승인 가능), 누적 승인 횟수는 학생 목록 조회(students API)에서 관리 목적으로 계속 확인할 수 있습니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "처리 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 상태 값"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "신청 내역을 찾을 수 없음"),
-            @ApiResponse(responseCode = "409", description = "이미 처리된 신청이거나 승인 횟수 초과")
+            @ApiResponse(responseCode = "409", description = "이미 처리된 신청")
     })
     @PatchMapping("/api/admin/transport-subsidies/{applicationId}/result")
     public AdminTransportSubsidyResponse modifyResult(@PathVariable Long applicationId, @RequestBody ResultRequest request) {
