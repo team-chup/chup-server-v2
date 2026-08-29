@@ -19,6 +19,7 @@ public record AdminApplicantResponse(
         String sourcePlatform,
         boolean isExternal,
         ApplicationStatus status,
+        LocalDateTime interviewAt,
         LocalDateTime appliedAt
 ) {
     public static AdminApplicantResponse from(ApplicationJpaEntity application) {
@@ -35,6 +36,7 @@ public record AdminApplicantResponse(
                 application.getSourcePlatform(),
                 application.isExternal(),
                 application.getStatus(),
+                application.getInterviewAt(),
                 application.getAppliedAt()
         );
     }

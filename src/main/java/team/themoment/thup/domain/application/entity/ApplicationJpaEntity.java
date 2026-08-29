@@ -61,9 +61,15 @@ public class ApplicationJpaEntity {
     @Column(name = "result_updated_at")
     private LocalDateTime resultUpdatedAt;
 
-    public void updateStatus(ApplicationStatus status) {
+    @Column(name = "interview_at")
+    private LocalDateTime interviewAt;
+
+    public void updateStatus(ApplicationStatus status, LocalDateTime interviewAt) {
         this.status = status;
         this.resultUpdatedAt = LocalDateTime.now();
+        if (status == ApplicationStatus.INTERVIEW_SCHEDULED) {
+            this.interviewAt = interviewAt;
+        }
     }
 
     public String getEffectiveCompanyName() {

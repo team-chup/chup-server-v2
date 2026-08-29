@@ -14,6 +14,8 @@ import team.themoment.thup.domain.user.entity.UserJpaEntity;
 import team.themoment.thup.domain.user.entity.constant.Role;
 import team.themoment.thup.domain.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -22,7 +24,8 @@ public class RegisterManualApplicantService {
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
 
-    public AdminApplicantResponse execute(Long userId, String companyName, String sourcePlatform, ApplicationStatus status) {
+    public AdminApplicantResponse execute(Long userId, String companyName, String sourcePlatform,
+                                           ApplicationStatus status, LocalDateTime interviewAt) {
         if (userId == null) {
             throw new ExpectedException("학생을 선택해야 합니다.", HttpStatus.BAD_REQUEST);
         }
@@ -34,6 +37,9 @@ public class RegisterManualApplicantService {
         }
         if (status == null) {
             throw new ExpectedException("현재 상태를 선택해야 합니다.", HttpStatus.BAD_REQUEST);
+        }
+        if (status == ApplicationStatus.INTERVIEW_SCHEDULED && interviewAt == null) {
+            throw new ExpectedException("면접 예정 상태로 등록하려면 면접 일시를 입력해야 합니다.", HttpStatus.BAD_REQUEST);
         }
 
         UserJpaEntity student = userRepository.findById(userId)
@@ -50,7 +56,7 @@ public class RegisterManualApplicantService {
                 .build();
 
         if (status != ApplicationStatus.APPLIED) {
-            application.updateStatus(status);
+            application.updateStatus(status, interviewAt);
         }
 
         applicationRepository.save(application);
