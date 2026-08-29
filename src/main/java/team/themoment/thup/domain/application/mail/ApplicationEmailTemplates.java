@@ -32,6 +32,7 @@ public final class ApplicationEmailTemplates {
     private static String resultLabel(ApplicationStatus status) {
         return switch (status) {
             case APPLIED -> "지원 접수";
+            case DOCUMENT_FAILED -> "서류 탈락";
             case INTERVIEW_SCHEDULED -> "면접 예정";
             case PASSED -> "최종 합격";
             case FAILED -> "면접 탈락";
