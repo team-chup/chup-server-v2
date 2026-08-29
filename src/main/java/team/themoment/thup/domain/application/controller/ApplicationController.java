@@ -136,7 +136,7 @@ public class ApplicationController {
             @ApiResponse(responseCode = "404", description = "지원 내역을 찾을 수 없음")
     })
     @PatchMapping("/api/admin/applicants/{applicationId}/result")
-    public AdminApplicantResponse modifyApplicationResult(@PathVariable Long applicationId, @RequestBody ResultRequest request) {
+    public AdminApplicantResponse modifyApplicationResult(@PathVariable Long applicationId, @RequestBody ApplicationResultRequest request) {
         return modifyApplicationResultService.execute(applicationId, request.status(), request.interviewAt());
     }
 
@@ -144,7 +144,7 @@ public class ApplicationController {
 
     private record ExternalApplicationRequest(String companyName, String sourcePlatform) {}
 
-    private record ResultRequest(ApplicationStatus status, LocalDateTime interviewAt) {}
+    private record ApplicationResultRequest(ApplicationStatus status, LocalDateTime interviewAt) {}
 
     private record ManualApplicantRequest(
             Long userId,

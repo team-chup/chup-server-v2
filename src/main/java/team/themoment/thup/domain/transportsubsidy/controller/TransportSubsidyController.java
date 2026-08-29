@@ -110,9 +110,9 @@ public class TransportSubsidyController {
             @ApiResponse(responseCode = "409", description = "이미 처리된 신청")
     })
     @PatchMapping("/api/admin/transport-subsidies/{applicationId}/result")
-    public AdminTransportSubsidyResponse modifyResult(@PathVariable Long applicationId, @RequestBody ResultRequest request) {
+    public AdminTransportSubsidyResponse modifyResult(@PathVariable Long applicationId, @RequestBody TransportSubsidyResultRequest request) {
         return modifyTransportSubsidyResultService.execute(applicationId, request.status());
     }
 
-    private record ResultRequest(TransportSubsidyStatus status) {}
+    private record TransportSubsidyResultRequest(TransportSubsidyStatus status) {}
 }
