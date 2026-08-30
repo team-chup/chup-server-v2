@@ -9,10 +9,13 @@ import team.themoment.sdk.exception.ExpectedException;
 import team.themoment.thup.domain.application.dto.ApplicationResponse;
 import team.themoment.thup.domain.application.entity.ApplicationJpaEntity;
 import team.themoment.thup.domain.application.entity.constant.ApplicationSource;
+import team.themoment.thup.domain.application.entity.constant.ApplicationStatus;
 import team.themoment.thup.domain.application.repository.ApplicationRepository;
 import team.themoment.thup.domain.user.entity.UserJpaEntity;
 import team.themoment.thup.domain.user.entity.constant.Role;
 import team.themoment.thup.domain.user.repository.UserRepository;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +25,15 @@ public class RegisterMyExternalApplicationService {
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
 
-    public ApplicationResponse execute(OAuth2User user, String companyName, String sourcePlatform) {
+    public ApplicationResponse execute(OAuth2User user, String companyName, String sourcePlatform, LocalDateTime interviewAt) {
         if (companyName == null || companyName.isBlank()) {
             throw new ExpectedException("회사명을 입력해야 합니다.", HttpStatus.BAD_REQUEST);
         }
         if (sourcePlatform == null || sourcePlatform.isBlank()) {
             throw new ExpectedException("지원 경로(플랫폼)를 입력해야 합니다.", HttpStatus.BAD_REQUEST);
+        }
+        if (interviewAt == null) {
+            throw new ExpectedException("면접 일시를 입력해야 합니다.", HttpStatus.BAD_REQUEST);
         }
 
         Long userId = ((Number) user.getAttribute("id")).longValue();
@@ -37,16 +43,16 @@ public class RegisterMyExternalApplicationService {
             throw new ExpectedException("학생만 외부 지원 내역을 등록할 수 있습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        // 등록 시점의 결과를 학생이 임의로 지정하지 못하도록 상태는 항상 지원 접수(APPLIED)로 시작하고,
-        // 이후 상태 변경은 기존 관리자용 처리(PATCH /api/admin/applicants/{id}/result)로만 가능하다.
-        ApplicationJpaEntity application = applicationRepository.save(
-                ApplicationJpaEntity.builder()
-                        .user(student)
-                        .companyName(companyName)
-                        .applicationSource(ApplicationSource.EXTERNAL)
-                        .sourcePlatform(sourcePlatform)
-                        .build()
-        );
+        // 학생이 외부 플랫폼 지원 내역을 직접 등록하는 시점은 이미 서류 합격 후 면접 단계에 접어든
+        // 경우를 전제로 하므로, 등록 즉시 상태를 면접 예정(INTERVIEW_SCHEDULED)으로 설정한다.
+        ApplicationJpaEntity application = ApplicationJpaEntity.builder()
+                .user(student)
+                .companyName(companyName)
+                .applicationSource(ApplicationSource.EXTERNAL)
+                .sourcePlatform(sourcePlatform)
+                .build();
+        application.updateStatus(ApplicationStatus.INTERVIEW_SCHEDULED, interviewAt);
+        applicationRepository.save(application);
 
         return ApplicationResponse.from(application);
     }
