@@ -2,7 +2,6 @@ package team.themoment.thup.domain.application.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import team.themoment.thup.domain.application.entity.constant.ApplicationSource;
 import team.themoment.thup.domain.application.entity.constant.ApplicationStatus;
 import team.themoment.thup.domain.job.entity.JobPositionJpaEntity;
@@ -53,10 +52,6 @@ public class ApplicationJpaEntity {
     @Column(name = "status", nullable = false)
     @Builder.Default
     private ApplicationStatus status = ApplicationStatus.APPLIED;
-
-    @CreationTimestamp
-    @Column(name = "applied_at", nullable = false, updatable = false)
-    private LocalDateTime appliedAt;
 
     @Column(name = "result_updated_at")
     private LocalDateTime resultUpdatedAt;
