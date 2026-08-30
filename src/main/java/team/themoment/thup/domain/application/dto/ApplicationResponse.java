@@ -13,8 +13,7 @@ public record ApplicationResponse(
         ApplicationSource applicationSource,
         String sourcePlatform,
         ApplicationStatus status,
-        LocalDateTime interviewAt,
-        LocalDateTime appliedAt
+        LocalDateTime interviewAt
 ) {
     public static ApplicationResponse from(ApplicationJpaEntity application) {
         return new ApplicationResponse(
@@ -24,8 +23,7 @@ public record ApplicationResponse(
                 application.getApplicationSource(),
                 application.getSourcePlatform(),
                 application.getStatus(),
-                application.getInterviewAt(),
-                application.getAppliedAt()
+                application.getInterviewAt()
         );
     }
 }
