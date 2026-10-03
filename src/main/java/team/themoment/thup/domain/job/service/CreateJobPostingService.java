@@ -75,6 +75,7 @@ public class CreateJobPostingService {
         List<AttachmentJpaEntity> savedAttachments = saveAttachments(saved, attachments);
 
         jobPostingDiscordNotifier.notifyCreated(new JobPostingNotification(
+                saved.getId(),
                 saved.getCompanyName(),
                 saved.getDescription(),
                 saved.getEmploymentType(),
