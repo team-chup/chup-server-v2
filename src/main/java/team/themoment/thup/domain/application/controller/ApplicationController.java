@@ -90,10 +90,10 @@ public class ApplicationController {
         return queryApplicantsService.execute(jobPostingId);
     }
 
-    @Operation(summary = "지원자 수동 등록", description = "잡코리아/원티드 등 외부 플랫폼을 통해 지원한 학생의 지원 현황을 관리자가 직접 등록합니다. status를 면접 예정(INTERVIEW_SCHEDULED)으로 등록하려면 interviewAt(면접 일시)을 함께 입력해야 합니다.")
+    @Operation(summary = "지원자 수동 등록", description = "잡코리아/원티드 등 외부 플랫폼을 통해 지원한 학생의 지원 현황을 관리자가 직접 등록합니다. status를 면접 예정(INTERVIEW_SCHEDULED)으로 등록하려면 interviewAt(면접 일시)을 함께 입력해야 합니다. 서류 탈락(DOCUMENT_FAILED)은 공식 공고 지원 건 전용이라 수동 등록 시에는 선택할 수 없습니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "등록 성공"),
-            @ApiResponse(responseCode = "400", description = "필수 값 누락, 잘못된 지원 경로 또는 면접 예정인데 면접 일시 누락"),
+            @ApiResponse(responseCode = "400", description = "필수 값 누락, 잘못된 지원 경로, 면접 예정인데 면접 일시 누락 또는 서류 탈락 상태 지정"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "학생을 찾을 수 없음")
@@ -129,10 +129,10 @@ public class ApplicationController {
         return FileDownloadResponses.of(queryApplicantResumeService.execute(applicationId));
     }
 
-    @Operation(summary = "지원 결과 처리", description = "지원 건의 상태(면접 예정/최종 합격/면접 탈락 등)를 변경합니다. 지원 경로(공식 공고/외부 플랫폼)와 무관하게, status를 면접 예정(INTERVIEW_SCHEDULED)으로 변경하려면 interviewAt(면접 일시)을 함께 입력해야 하며, 이미 면접 예정 상태인 건의 면접 일시를 다시 이 API로 수정할 수도 있습니다.")
+    @Operation(summary = "지원 결과 처리", description = "지원 건의 상태(면접 예정/최종 합격/면접 탈락 등)를 변경합니다. 지원 경로(공식 공고/외부 플랫폼)와 무관하게, status를 면접 예정(INTERVIEW_SCHEDULED)으로 변경하려면 interviewAt(면접 일시)을 함께 입력해야 하며, 이미 면접 예정 상태인 건의 면접 일시를 다시 이 API로 수정할 수도 있습니다. 서류 탈락(DOCUMENT_FAILED)은 공식 공고 지원 건에만 설정할 수 있습니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "처리 성공"),
-            @ApiResponse(responseCode = "400", description = "면접 예정인데 면접 일시 누락"),
+            @ApiResponse(responseCode = "400", description = "면접 예정인데 면접 일시 누락 또는 외부 지원 건에 서류 탈락 지정"),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "지원 내역을 찾을 수 없음")
