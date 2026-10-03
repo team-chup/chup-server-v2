@@ -28,23 +28,23 @@ jobs:
       - name: Build JAR
         run: ./gradlew bootJar -x test --no-daemon
 
-      - name: Copy deploy files to GSM SV VM
+      - name: Copy deploy files to chup-dev VM
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ssh.gsmsv.site
-          port: ${{ secrets.GSMSV_SSH_PORT }}
+          port: 24127
           username: ubuntu
-          key: ${{ secrets.GSMSV_SSH_PRIVATE_KEY }}
+          password: ${{ secrets.DEV_GSMSV_SSH_PASSWORD }}
           source: "build/libs/thup-*.jar,docker/Dockerfile,deploy/compose.yml,deploy/Caddyfile"
           target: "/home/ubuntu/thup/"
 
-      - name: Deploy on GSM SV VM
+      - name: Deploy on chup-dev VM
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ssh.gsmsv.site
-          port: ${{ secrets.GSMSV_SSH_PORT }}
+          port: 24127
           username: ubuntu
-          key: ${{ secrets.GSMSV_SSH_PRIVATE_KEY }}
+          password: ${{ secrets.DEV_GSMSV_SSH_PASSWORD }}
           envs: MYSQL_PASSWORD,REDIS_PASSWORD,DATAGSM_CLIENT_ID,DATAGSM_CLIENT_SECRET,DATAGSM_REDIRECT_URI,RESEND_API_KEY,MAIL_FROM_ADDRESS,DISCORD_JOB_WEBHOOK_URL,DISCORD_ERROR_WEBHOOK_URL
           script: |
             set -e
