@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: "21"
           distribution: "temurin"
@@ -39,7 +39,7 @@ jobs:
           target: "/home/ubuntu/thup/"
 
       - name: Deploy on chup-dev VM
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ssh.gsmsv.site
           port: 24127
