@@ -1,5 +1,6 @@
 package team.themoment.thup.domain.job.discord;
 
+import org.springframework.web.util.UriComponentsBuilder;
 import team.themoment.thup.domain.job.entity.constant.EmploymentType;
 import team.themoment.thup.global.discord.DiscordEmbed;
 
@@ -17,10 +18,15 @@ public final class JobPostingDiscordTemplate {
     }
 
     public static DiscordEmbed build(JobPostingNotification notification, String envLabel, String jobsUrl) {
+        // 클라이언트 /jobs 페이지가 jobId 쿼리 파라미터로 해당 공고 상세를 바로 연다
+        String jobDetailUrl = UriComponentsBuilder.fromUriString(jobsUrl)
+                .queryParam("jobId", notification.jobPostingId())
+                .toUriString();
+
         return new DiscordEmbed(
                 "📢 새로운 채용 공고가 등록되었어요!",
                 null,
-                jobsUrl,
+                jobDetailUrl,
                 COLOR,
                 List.of(
                         DiscordEmbed.Field.of("🏢 회사명", notification.companyName()),
@@ -31,7 +37,7 @@ public final class JobPostingDiscordTemplate {
                         DiscordEmbed.Field.of("📅 모집 기간",
                                 DATE_FORMATTER.format(notification.recruitStart())
                                         + " ~ " + DATE_FORMATTER.format(notification.recruitEnd())),
-                        DiscordEmbed.Field.of("🔗 링크", "[채용 공고 바로가기](" + jobsUrl + ")")
+                        DiscordEmbed.Field.of("🔗 링크", "[채용 공고 바로가기](" + jobDetailUrl + ")")
                 ),
                 new DiscordEmbed.Footer("[" + envLabel + "] 등록자: " + notification.createdByName()),
                 Instant.now().toString()

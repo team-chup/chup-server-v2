@@ -11,6 +11,7 @@ import java.util.List;
  * 엔티티를 그대로 넘기면 LazyInitializationException이 난다. 트랜잭션 스레드에서 값을 뽑아 넘긴다.
  */
 public record JobPostingNotification(
+        Long jobPostingId,
         String companyName,
         String description,
         EmploymentType employmentType,
