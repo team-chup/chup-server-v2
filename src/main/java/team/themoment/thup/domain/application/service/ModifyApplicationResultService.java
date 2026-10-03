@@ -30,6 +30,9 @@ public class ModifyApplicationResultService {
 
         ApplicationJpaEntity application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ExpectedException("지원 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        if (status == ApplicationStatus.DOCUMENT_FAILED && application.getApplicationSource() != ApplicationSource.OFFICIAL) {
+            throw new ExpectedException("서류 탈락 상태는 공식 공고 지원 건에만 설정할 수 있습니다.", HttpStatus.BAD_REQUEST);
+        }
         application.updateStatus(status, interviewAt);
 
         if (application.getApplicationSource() == ApplicationSource.OFFICIAL) {

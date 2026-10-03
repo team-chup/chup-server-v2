@@ -41,6 +41,9 @@ public class RegisterManualApplicantService {
         if (status == ApplicationStatus.INTERVIEW_SCHEDULED && interviewAt == null) {
             throw new ExpectedException("면접 예정 상태로 등록하려면 면접 일시를 입력해야 합니다.", HttpStatus.BAD_REQUEST);
         }
+        if (status == ApplicationStatus.DOCUMENT_FAILED) {
+            throw new ExpectedException("서류 탈락 상태는 공식 공고 지원 건에만 설정할 수 있습니다.", HttpStatus.BAD_REQUEST);
+        }
 
         UserJpaEntity student = userRepository.findById(userId)
                 .orElseThrow(() -> new ExpectedException("학생을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
