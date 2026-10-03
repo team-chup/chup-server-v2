@@ -24,6 +24,7 @@ services:
       - DISCORD_JOB_WEBHOOK_URL=${DISCORD_JOB_WEBHOOK_URL}
       - DISCORD_ERROR_WEBHOOK_URL=${DISCORD_ERROR_WEBHOOK_URL}
       - DISCORD_CLIENT_JOBS_URL=https://client.chup.site/jobs
+      - DISCORD_CLIENT_NOTICES_URL=https://client.chup.site/notices
       - CORS_ALLOWED_ORIGINS=https://client.chup.site,https://admin.chup.site
       - OAUTH_ALLOWED_REDIRECT_ORIGINS=https://client.chup.site,https://admin.chup.site
       - OAUTH_DEFAULT_REDIRECT_ORIGIN=https://client.chup.site

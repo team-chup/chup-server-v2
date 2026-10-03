@@ -10,6 +10,7 @@ public record DiscordProperties(
         String jobWebhookUrl,
         String errorWebhookUrl,
         String clientJobsUrl,
+        String clientNoticesUrl,
         Duration errorCooldown
 ) {
 }

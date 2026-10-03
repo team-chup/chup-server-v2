@@ -59,6 +59,7 @@ discord:
   job-webhook-url: ${DISCORD_JOB_WEBHOOK_URL:}
   error-webhook-url: ${DISCORD_ERROR_WEBHOOK_URL:}
   client-jobs-url: ${DISCORD_CLIENT_JOBS_URL:https://client.chup.site/jobs}
+  client-notices-url: ${DISCORD_CLIENT_NOTICES_URL:https://client.chup.site/notices}
   # 같은 에러(상태코드+메서드+경로+예외)가 이 시간 안에 반복되면 한 번만 알린다.
   error-cooldown: 5m
 

@@ -24,6 +24,7 @@ services:
       - DISCORD_JOB_WEBHOOK_URL=${DISCORD_JOB_WEBHOOK_URL}
       - DISCORD_ERROR_WEBHOOK_URL=${DISCORD_ERROR_WEBHOOK_URL}
       - DISCORD_CLIENT_JOBS_URL=https://dev-client.chup.site/jobs
+      - DISCORD_CLIENT_NOTICES_URL=https://dev-client.chup.site/notices
       - DEV_TOOLS_ENABLED=true
     volumes:
       - storage_data:/data/storage
